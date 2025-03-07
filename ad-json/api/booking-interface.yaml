@@ -1,0 +1,96 @@
+openapi: 3.0.0
+info:
+  title: 酒店预订接口
+  description: "用于预订酒店房间"
+  version: "1.0"
+servers:
+  - url: https://agent-connect.ai
+paths:
+  /agents/travel/hotel/api/rooms/booking/ph:
+    post:
+      summary: "Booking"
+      description: "预订酒店房间操作"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schem
+              type: object
+              required:
+                - customerOrderNo
+                - hotelID
+                - ratePlanID
+                - roomNum
+                - checkInDate
+                - checkOutDate
+                - guestNames
+                - orderAmount
+                - contactName
+                - contactMobile
+              properties:
+                customerOrderNo:
+                  type: string
+                  description: "商户订单号（即你们自己平台的本地订单号，用于双方订单关联映射。单号值必须唯一，否则会被系统判定为重复下单进行拦截）"
+                hotelID:
+                  type: integer
+                  description: "酒店ID"
+                ratePlanID:
+                  type: string
+                  description: "产品（价格计划）ID"
+                roomNum:
+                  type: integer
+                  description: "房间数量"
+                checkInDate:
+                  type: string
+                  format: date
+                  description: "入住日期（格式：yyyy-MM-dd）"
+                checkOutDate:
+                  type: string
+                  format: date
+                  description: "离店日期（格式：yyyy-MM-dd）"
+                guestNames:
+                  type: array
+                  description: "房客姓名，每个房间预留一个房客姓名。长度需和房间数量保持一致。"
+                  items:
+                    type: string
+                arriveTime:
+                  type: string
+                  description: "最晚到店时间，如：2020-07-27 16:00"
+                orderAmount:
+                  type: number
+                  description: "订单总金额"
+                contactName:
+                  type: string
+                  description: "订单联系人姓名"
+                contactMobile:
+                  type: string
+                  description: "订单联系人手机号"
+                contactEmail:
+                  type: string
+                  description: "订单联系人邮箱"
+                orderRemark:
+                  type: string
+                  description: "用户备注信息"
+                callBackUrl:
+                  type: string
+                  description: "订单状态变更异步回调地址，回调详见:订单状态推送通知说明(不传就没有回调了)"
+      responses:
+        '200':
+          description: "预订成功响应"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      orderNo:
+                        type: string
+                        description: "酒店订单号"
+                  success:
+                    type: boolean
+                    description: "请求是否成功"
+                  msg:
+                    type: string
+                    description: "请求结果消息"

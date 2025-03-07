@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: Hotel Room and Rate Plan Query Interface
+  version: "1.0.0"
+  description: |
+    This API allows querying hotel room types, prices, and inventory based on check-in and check-out dates.
+    The API provides real-time data from multiple upstream channels, which may result in longer response times.
+    It is recommended to implement asynchronous calls and loading effects on the hotel details page.
+servers:
+  - url: https://agent-connect.ai
+paths:
+  /agents/travel/hotel/api/query_room_and_rate_plan/ph:
+    get:
+      summary: Query hotel room types, prices, and inventory
+      description: |
+        Used for the dynamic data section of hotel room types, prices, and inventory on the hotel details page.
+        Since this interface requests real-time dynamic data from multiple upstream channels, the response time
+        will be longer than other interfaces. It is recommended to use asynchronous calls on the hotel details page
+        and implement loading effects on the frontend.
+      parameters:
+        - name: hotelID
+          in: query
+          required: true
+          schema:
+            type: integer
+          description: Required. Hotel ID
+        - name: checkInDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Required. Check-in date in yyyy-MM-dd format
+        - name: checkOutDate
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Required. Check-out date in yyyy-MM-dd format
+      responses:
+        '200':
+          description: A successful response containing hotel room and rate plan information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      rooms:
+                        type: array
+                        description: List of physical room types
+                        items:
+                          $ref: '#/components/schemas/RoomInfo'
+                  success:
+                    type: boolean
+                    description: Whether the request was successful
+                  msg:
+                    type: string
+                    description: Response message
+
+components:
+  schemas:
+    HotelPicture:
+      type: object
+      properties:
+        path:
+          type: string
+          description: URL path to the image
+          example: "http://m.tuniucdn.com/fb3/s1/2n9c/6uM1sioyKvFyQ31jBE5P9iXPE6H.jpg"
+        name:
+          type: string
+          description: Name of the image
+          example: "漫趣主题房"
+
+    HotelFacility:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the facility
+          example: "空调"
+        status:
+          type: string
+          description: Status of the facility (1 for available)
+          example: "1"
+
+    CancelRuleInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the cancellation rule
+          example: "限时取消"
+        type:
+          type: integer
+          description: Cancellation policy type (1=non-refundable, 2=time-limited cancellation, 3=charged cancellation)
+          example: 2
+        desc:
+          type: string
+          description: Description of the cancellation policy
+          example: "2020-07-27 16:00:00前可免费取消修改，我们不会收取房费。如未入住或取消修改及提前离店，我们将收取您全额房费（含税费）。"
+        freeCancelLatestTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: Latest time for free cancellation (only available when cancellation policy type is time-limited cancellation)
+          example: "2020-07-27 16:00:00"
+
+    RatePlanInfo:
+      type: object
+      properties:
+        ratePlanId:
+          type: string
+          description: Product price ID, this value changes in real-time with each call
+          example: "1_590468_2500_1935942574_67145_3_162055179_95777912_640153992"
+        ratePlanName:
+          type: string
+          description: Product name
+          example: "漫趣主题房"
+        paymentType:
+          type: integer
+          description: Payment method (0=prepaid, 1=pay at hotel, currently only prepaid is available)
+          example: 0
+        averagePrice:
+          type: number
+          format: float
+          description: Average price
+          example: 177.00
+        pricePerDay:
+          type: string
+          description: Daily prices, separated by "|", the number should correspond to the check-in/check-out time
+          example: "125.0|229.0"
+        stockPerDay:
+          type: string
+          description: Inventory (for reference), daily inventory of rooms, corresponding to the sales guide price; separated by "|"
+          example: "99|99"
+        confirmType:
+          type: integer
+          description: Confirmation type (0=instant confirmation not supported, 1=instant confirmation supported)
+          example: 1
+        breakfast:
+          type: string
+          description: Breakfast rules
+          example: "不含早餐"
+        cancelRule:
+          $ref: '#/components/schemas/CancelRuleInfo'
+
+    RoomInfo:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          description: Room type ID (deprecated field, use ratePlanId for ordering)
+          example: 1935942574
+        roomName:
+          type: string
+          description: Room type name
+          example: "漫趣主题房"
+        useableArea:
+          type: string
+          description: Usable area
+          example: "18㎡"
+        capacity:
+          type: string
+          description: Maximum capacity
+          example: "2"
+        floor:
+          type: string
+          description: Floor distribution of room type
+          example: "4-6层"
+        bedType:
+          type: string
+          description: Bed type description
+          example: "大床"
+        windowType:
+          type: string
+          nullable: true
+          description: Window type
+        pictures:
+          type: array
+          description: Room type image list
+          items:
+            $ref: '#/components/schemas/HotelPicture'
+        facilities:
+          type: array
+          description: Room type facility list
+          items:
+            $ref: '#/components/schemas/HotelFacility'
+        ratePlans:
+          type: array
+          description: List of saleable products for the room type
+          items:
+            $ref: '#/components/schemas/RatePlanInfo'

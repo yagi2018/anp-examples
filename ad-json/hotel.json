@@ -1,0 +1,140 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "did": "https://w3id.org/did#",
+    "ad": "https://agent-network-protocol.com/ad#"
+  },
+  "@type": "ad:AgentDescription",
+  "@id": "https://agent-connect.ai/agents/travel/hotel/ad/ph/12345/ad.json",
+  "name": "酒店智能体",
+  "did": "did:wba:agent-did.com:service:hotel",
+  "owner": {
+    "@type": "Organization",
+    "name": "agent-connect.ai",
+    "@id": "https://agent-connect.ai"
+  },
+  "description": "酒店智能体，提供酒店客房查询、预订、咨询、售后等服务.",
+  "version": "1.0.0",
+  "created": "2023-06-15T08:30:00Z",
+  "ad:securityDefinitions": {
+    "didwba_sc": {
+      "scheme": "didwba",
+      "in": "header",
+      "name": "Authorization"
+    }
+  },
+  "ad:security": "didwba_sc",
+  "ad:domainEntity": {
+    "@type": "Hotel",
+    "hotelID": 12345,
+    "name": "海景豪华酒店",
+    "description": "坐落于美丽的亚龙湾，拥有绝佳的海景视野和私人沙滩，提供豪华舒适的住宿体验。",
+    "@id": "https://agent-connect.ai/agents/hotel/12345/hotel.json",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "海南省三亚市亚龙湾国家旅游度假区",
+      "addressLocality": "三亚",
+      "addressRegion": "",
+      "addressCountry": ""
+    },
+    "telephone": "0898-88888888",
+    "openingDate": "2015-06-01",
+    "starRating": {
+      "@type": "Rating",
+      "ratingValue": 5,
+      "alternateName": "五星级",
+      "isRelatedTo": true
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 18.2531,
+      "longitude": 109.6245
+    },
+    "image": [
+      {
+        "@type": "ImageObject",
+        "url": "https://example.com/hotel/12345/lobby.jpg",
+        "name": "酒店大堂"
+      },
+      {
+        "@type": "ImageObject",
+        "url": "https://example.com/hotel/12345/pool.jpg",
+        "name": "无边泳池"
+      },
+      {
+        "@type": "ImageObject",
+        "url": "https://example.com/hotel/12345/beach.jpg",
+        "name": "私人沙滩"
+      }
+    ],
+    "amenityFeature": [
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "无边泳池",
+        "value": true
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "健身中心",
+        "value": true
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "餐厅",
+        "value": true
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "会议室",
+        "value": true
+      },
+      {
+        "@type": "LocationFeatureSpecification",
+        "name": "商务中心",
+        "value": true
+      }
+    ],
+    "availableService": [
+      {
+        "@type": "Service",
+        "name": "24小时前台",
+        "isAvailable": true
+      },
+      {
+        "@type": "Service",
+        "name": "行李寄存",
+        "isAvailable": true
+      },
+      {
+        "@type": "Service",
+        "name": "叫车服务",
+        "isAvailable": true
+      },
+      {
+        "@type": "Service",
+        "name": "SPA服务",
+        "isAvailable": true
+      }
+    ]
+  },
+  "ad:interfaces": [
+    {
+      "@type": "ad:SearchInterface",
+      "protocol": "YAML",
+      "url": "https://agent-connect.ai/agents/travel/hotel/api_files/ph/search-interface.yaml",
+      "description": "提供酒店搜索和筛选信息的OpenAPI的YAML文件，可以通过接口搜索酒店房间等产品或服务."
+    },
+    {
+      "@type": "ad:BookingInterface",
+      "protocol": "YAML",
+      "url": "https://agent-connect.ai/agents/travel/hotel/api_files/ph/booking-interface.yaml",
+      "description": "提供预订酒店房间等产品或服务的OpenAPI的YAML文件 ."
+    },
+    {
+      "@type": "ad:NaturalLanguageInterface",
+      "protocol": "YAML",
+      "url": "https://agent-connect.ai/agents/travel/hotel/api_files/ph/nl-interface.yaml",
+      "description": "提供自然语言交互接口的OpenAPI的YAML文件，可以通过次接口与智能体进行自然语言交互."
+    }
+  ]
+} 

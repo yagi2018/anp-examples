@@ -1,0 +1,102 @@
+{
+  "@context": {
+    "@vocab": "https://schema.org/",
+    "ad": "https://agent-network-protocol.com/ad#"
+  },
+  "@type": "HotelRoom",
+  "@id": "https://agent-connect.ai/agents/travel/hotel/room/detail/ph/78901/ad.json",
+  "identifier": "room-78901",
+  "roomName": "豪华海景大床房",
+  "name": "豪华海景大床房",
+  "description": "45平米 特大床 海景房",
+  "useableArea": "45平米",
+  "capacity": "2人",
+  "floor": "15-20层",
+  "bedType": "特大床",
+  "windowType": "海景房",
+  "image": [
+    {
+      "@type": "ImageObject",
+      "url": "https://example.com/hotel/rooms/78901/main.jpg",
+      "caption": "房间全景",
+      "description": "房间全景"
+    },
+    {
+      "@type": "ImageObject",
+      "url": "https://example.com/hotel/rooms/78901/bed.jpg",
+      "caption": "床铺",
+      "description": "床铺"
+    },
+    {
+      "@type": "ImageObject",
+      "url": "https://example.com/hotel/rooms/78901/bathroom.jpg",
+      "caption": "浴室",
+      "description": "浴室"
+    }
+  ],
+  "facilities": [
+    {
+      "@type": "LocationFeatureSpecification",
+      "name": "空调",
+      "value": true
+    },
+    {
+      "@type": "LocationFeatureSpecification",
+      "name": "电视",
+      "value": true
+    },
+    {
+      "@type": "LocationFeatureSpecification",
+      "name": "迷你吧",
+      "value": true
+    },
+    {
+      "@type": "LocationFeatureSpecification",
+      "name": "保险箱",
+      "value": true
+    },
+    {
+      "@type": "LocationFeatureSpecification",
+      "name": "浴缸",
+      "value": true
+    }
+  ],
+  "offers": [
+    {
+      "@type": "Offer",
+      "identifier": "RP12345",
+      "name": "标准价格",
+      "price": 1280.00,
+      "pricePerDay": ["1280.00", "1280.00", "1280.00"],
+      "availability": ["5", "5", "5"],
+      "paymentMethod": "现付",
+      "instantConfirmation": true,
+      "breakfast": "双早",
+      "cancelPolicy": {
+        "name": "限时取消",
+        "type": 2,
+        "description": "入住前24小时可免费取消，之后将收取首晚房费作为取消费用",
+        "freeCancelUntil": "2023-07-14T18:00:00Z"
+      }
+    },
+    {
+      "@type": "Offer",
+      "identifier": "RP12346",
+      "name": "会员价格",
+      "price": 1080.00,
+      "pricePerDay": ["1080.00", "1080.00", "1080.00"],
+      "availability": ["3", "3", "3"],
+      "paymentMethod": "现付",
+      "instantConfirmation": true,
+      "breakfast": "双早",
+      "cancelPolicy": {
+        "name": "限时取消",
+        "type": 2,
+        "description": "入住前24小时可免费取消，之后将收取首晚房费作为取消费用",
+        "freeCancelUntil": "2023-07-14T18:00:00Z"
+      }
+    }
+  ],
+  "checkinTime": "2023-07-15",
+  "checkoutTime": "2023-07-18"
+} 
