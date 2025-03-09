@@ -7,6 +7,7 @@ This directory contains example code for authentication using DID (Decentralized
 - `server.py`: FastAPI server using DID authentication middleware
 - `did_auth_middleware.py`: DID authentication middleware handling DID authentication and JWT token generation
 - `client.py`: Client module authenticating with DID and obtaining access tokens
+- `did_auth_client.py`: DID authentication client class providing structured DID authentication and token management
 - `jwt_config.py`: JWT configuration module providing functions to read public and private keys
 - `test_token.py`: Test script for testing the complete authentication flow
 - `private_key.pem` and `public_key.pem`: Key pair used for JWT signing
@@ -67,25 +68,39 @@ python -m examples_code.client
 
 ## Client Flow
 
-`client.py` implements the following flow:
+`client.py` uses the `DIDAuthClient` class to implement the following flow:
 
-1. **Loading DID Document and Private Key**:
-   - Load the DID document from the specified path (`use_did_test_public/did.json`)
-   - Load the private key from the specified path (`use_did_test_public/key-1_private.pem`)
+1. **Creating DID Authentication Client**:
+   - Initialize DIDAuthClient with DID document path and private key path
+   - DIDAuthClient handles loading the DID document and private key, and manages authentication headers and tokens
 
-2. **Generating Authentication Header**:
-   - Generate a DID authentication header using the DID document, server domain, and sign callback function
-   - The sign callback function signs content using the private key
-
-3. **Sending Authentication Request**:
-   - Send a request with the DID authentication header to the server
+2. **Generating Authentication Headers and Sending Requests**:
+   - Use DIDAuthClient to get authentication headers (DID authentication or Bearer token)
+   - Send requests to the server with the authentication headers
    - Server verifies the authentication header and generates a JWT token
    - Server returns the JWT token in the response header
 
-4. **Extracting and Using the Token**:
-   - Extract the JWT token from the response header
-   - Use the JWT token for subsequent requests
-   - Server verifies the JWT token and processes the request
+3. **Managing Tokens**:
+   - DIDAuthClient extracts JWT tokens from response headers and stores them
+   - Subsequent requests automatically use the stored token
+   - If a token is invalid, DIDAuthClient automatically clears the token and retries with DID authentication
+
+## DIDAuthClient Class
+
+`did_auth_client.py` provides the `DIDAuthClient` class with the following features:
+
+1. **Authentication Header Management**:
+   - Generate DID authentication headers
+   - Store and manage JWT tokens
+   - Automatically select between DID authentication and JWT tokens as needed
+
+2. **Multi-domain Support**:
+   - Store authentication headers and tokens separately for different domains
+   - Automatically select the correct authentication header based on the request URL
+
+3. **Token Lifecycle Management**:
+   - Extract and update tokens from response headers
+   - Clear tokens for a single domain or all domains
 
 ## Related Files
 

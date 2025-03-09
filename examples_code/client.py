@@ -8,15 +8,11 @@ import logging
 import asyncio
 import aiohttp
 from pathlib import Path
-from typing import Tuple, Dict, Optional, Callable, Any
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import serialization
-from cryptography.hazmat.primitives import hashes
+from typing import Tuple, Dict, Optional
+from urllib.parse import urlparse
 
-# Import agent_connect for DID authentication
-from agent_connect.authentication.did_wba import (
-    generate_auth_header
-)
+# Import DIDAuthClient
+from examples_code.did_auth_client import DIDAuthClient
 
 # Configure logging
 logging.basicConfig(
@@ -31,93 +27,21 @@ TEST_ENDPOINT = "/test"
 DID_DOCUMENT_PATH = "use_did_test_public/did.json"
 PRIVATE_KEY_PATH = "use_did_test_public/key-1_private.pem"
 
-def load_did_document() -> Dict:
-    """
-    Load the DID document from file.
-    
-    Returns:
-        Dict: The DID document
-    """
-    try:
-        # Get the absolute path to the DID document
-        base_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        did_path = base_dir / DID_DOCUMENT_PATH
-        
-        with open(did_path, 'r') as f:
-            did_document = json.load(f)
-        
-        logger.info(f"Loaded DID document from {did_path}")
-        return did_document
-    except Exception as e:
-        logger.error(f"Error loading DID document: {e}")
-        raise
-
-def load_private_key() -> ec.EllipticCurvePrivateKey:
-    """
-    Load the private key from file.
-    
-    Returns:
-        ec.EllipticCurvePrivateKey: The private key
-    """
-    try:
-        # Get the absolute path to the private key
-        base_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        key_path = base_dir / PRIVATE_KEY_PATH
-        
-        with open(key_path, 'rb') as f:
-            private_key_data = f.read()
-        
-        private_key = serialization.load_pem_private_key(
-            private_key_data,
-            password=None
-        )
-        
-        logger.info(f"Loaded private key from {key_path}")
-        return private_key
-    except Exception as e:
-        logger.error(f"Error loading private key: {e}")
-        raise
-
-def sign_callback(content: bytes, method_fragment: str) -> bytes:
-    """
-    Callback function for signing content with the private key.
-    
-    Args:
-        content: Content to sign
-        method_fragment: Method fragment from the DID document
-        
-    Returns:
-        bytes: The signature
-    """
-    try:
-        private_key = load_private_key()
-        
-        # 使用正确的哈希算法
-        signature = private_key.sign(
-            content,
-            ec.ECDSA(hashes.SHA256())
-        )
-        
-        logger.info(f"Signed content with method fragment: {method_fragment}")
-        return signature
-    except Exception as e:
-        logger.error(f"Error signing content: {e}")
-        raise
-
-async def test_did_auth(url: str, auth_header: str) -> Tuple[bool, Optional[str]]:
+async def test_did_auth(url: str, auth_client: DIDAuthClient) -> Optional[str]:
     """
     Test DID authentication and get token.
     
     Args:
         url: URL to test
-        auth_header: Authentication header
+        auth_client: DID authentication client
         
     Returns:
-        Tuple[bool, Optional[str]]: (success, token)
+        Optional[str]: The token if authentication is successful and a token is received, otherwise None
     """
     try:
-        headers = {"Authorization": auth_header}
-        logger.info(f"Sending request to {url} with Authorization header: {auth_header[:50]}...")
+        # Get authentication header
+        headers = auth_client.get_auth_header(url)
+        logger.info(f"Sending request to {url} with Authentication header")
         
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -125,42 +49,41 @@ async def test_did_auth(url: str, auth_header: str) -> Tuple[bool, Optional[str]
                 logger.info(f"Response headers: {response.headers}")
                 
                 if response.status == 200:
-                    # Extract token from response headers
-                    token = response.headers.get("Authorization")
-                    logger.info(f"Authorization header in response: {token}")
+                    # Update token and get return value
+                    token = auth_client.update_token(url, dict(response.headers))
                     
-                    if token and token.lower().startswith("bearer "):
-                        token = token[7:]  # Remove "Bearer " prefix
+                    if token:
                         logger.info(f"Successfully authenticated and received token: {token[:30]}...")
-                        return True, token
+                        return token
                     else:
                         logger.warning("Authentication successful but no token received or token format incorrect")
                         logger.warning(f"Response headers: {response.headers}")
-                        return True, None
+                        return None
                 else:
                     response_text = await response.text()
                     logger.error(f"Authentication failed with status code: {response.status}")
                     logger.error(f"Response: {response_text}")
-                    return False, None
+                    return None
     except Exception as e:
         logger.error(f"Error during authentication test: {e}")
         logger.error("Stack trace:", exc_info=True)
-        return False, None
+        return None
 
-async def verify_token(url: str, token: str) -> bool:
+async def verify_token(url: str, auth_client: DIDAuthClient) -> bool:
     """
     Verify token by making a request with it.
     
     Args:
         url: URL to test
-        token: Token to verify
+        auth_client: DID authentication client
         
     Returns:
         bool: Whether the token is valid
     """
     try:
-        headers = {"Authorization": f"Bearer {token}"}
-        logger.info(f"Verifying token at {url} with Authorization header: Bearer {token[:30]}...")
+        # Get authentication header (using stored token)
+        headers = auth_client.get_auth_header(url)
+        logger.info(f"Verifying token at {url}")
         
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers) as response:
@@ -174,6 +97,9 @@ async def verify_token(url: str, token: str) -> bool:
                     response_text = await response.text()
                     logger.error(f"Token verification failed with status code: {response.status}")
                     logger.error(f"Response: {response_text}")
+                    
+                    # If the token is invalid, clear the token
+                    auth_client.clear_token(url)
                     return False
     except Exception as e:
         logger.error(f"Error during token verification: {e}")
@@ -183,58 +109,39 @@ async def verify_token(url: str, token: str) -> bool:
 async def main():
     """Main function to run the client."""
     try:
-        # 1. Load DID document
-        did_document = load_did_document()
-        did = did_document["id"]
-        logger.info(f"Using DID: {did}")
-        
-        # 2. Extract server domain from SERVER_URL
-        from urllib.parse import urlparse
-        parsed_url = urlparse(SERVER_URL)
-        server_domain = parsed_url.netloc
-        # Remove port from server_domain if present
-        server_domain = server_domain.split(':')[0]
-        logger.info(f"Server domain: {server_domain}")
-        
-        # 3. Generate authentication header
-        logger.info("Generating authentication header...")
-        logger.info(f"DID document: {did_document}")
-        auth_header = generate_auth_header(
-            did_document,
-            server_domain,
-            sign_callback
+        # 1. Create DID authentication client
+        auth_client = DIDAuthClient(
+            did_document_path=DID_DOCUMENT_PATH,
+            private_key_path=PRIVATE_KEY_PATH
         )
-        logger.info(f"Generated authentication header: {auth_header[:50]}...")
+        logger.info("Created DID authentication client")
         
-        # 4. Test DID authentication and get token
+        # 2. Test DID authentication and get token
         test_url = f"{SERVER_URL}{TEST_ENDPOINT}"
         logger.info(f"Testing DID authentication at {test_url}")
-        auth_success, token = await test_did_auth(test_url, auth_header)
+        token = await test_did_auth(test_url, auth_client)
         
-        if not auth_success:
-            logger.error("DID authentication test failed")
+        if token is None:
+            logger.error("DID authentication test failed or no token received")
             return
             
-        logger.info("DID authentication test successful")
+        logger.info("DID authentication test successful and token received")
         
-        # 5. Verify token by making another request (if token was received)
-        if token:
-            logger.info(f"Received token from server: {token[:30]}...")
-            logger.info("Verifying token...")
-            token_valid = await verify_token(test_url, token)
-            
-            if token_valid:
-                logger.info("Token verification successful")
-            else:
-                logger.error("Token verification failed")
+        # 3. Verify token
+        logger.info("Verifying token...")
+        token_valid = await verify_token(test_url, auth_client)
+        
+        if token_valid:
+            logger.info("Token verification successful")
         else:
-            logger.warning("No token received from server, skipping token verification")
-            logger.info("This is expected if the test endpoint is in EXEMPT_PATHS")
-            logger.info("To test token generation, remove /test from EXEMPT_PATHS in did_auth_middleware.py")
+            logger.error("Token verification failed")
             
     except Exception as e:
         logger.error(f"Error in main function: {e}")
         logger.error("Stack trace:", exc_info=True)
 
+# Directly run the client code
 if __name__ == "__main__":
+    # Run the client
+    logger.info("Starting DID authentication client")
     asyncio.run(main()) 
