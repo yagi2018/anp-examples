@@ -36,8 +36,8 @@ class DIDAuthClient:
         Initialize the DID authentication client.
         
         Args:
-            did_document_path: Path to the DID document.
-            private_key_path: Path to the private key.
+            did_document_path: Path to the DID document (absolute or relative path)
+            private_key_path: Path to the private key (absolute or relative path)
         """
         self.did_document_path = did_document_path
         self.private_key_path = private_key_path
@@ -50,7 +50,7 @@ class DIDAuthClient:
         logger.info("DIDAuthClient initialized")
     
     def _get_domain(self, server_url: str) -> str:
-        """Get domain from URL"""
+        """Extract domain from URL"""
         parsed_url = urlparse(server_url)
         domain = parsed_url.netloc.split(':')[0]
         return domain
@@ -60,9 +60,9 @@ class DIDAuthClient:
         try:
             if self.did_document:
                 return self.did_document
-                
-            base_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            did_path = base_dir / self.did_document_path
+            
+            # Use the provided path directly, without resolving absolute path
+            did_path = self.did_document_path
             
             with open(did_path, 'r') as f:
                 did_document = json.load(f)
@@ -77,8 +77,8 @@ class DIDAuthClient:
     def _load_private_key(self) -> ec.EllipticCurvePrivateKey:
         """Load private key"""
         try:
-            base_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-            key_path = base_dir / self.private_key_path
+            # Use the provided path directly, without resolving absolute path
+            key_path = self.private_key_path
             
             with open(key_path, 'rb') as f:
                 private_key_data = f.read()
@@ -103,7 +103,7 @@ class DIDAuthClient:
                 ec.ECDSA(hashes.SHA256())
             )
             
-            logger.debug(f"Signed content, method fragment: {method_fragment}")
+            logger.debug(f"Signed content with method fragment: {method_fragment}")
             return signature
         except Exception as e:
             logger.error(f"Error signing content: {e}")
@@ -131,11 +131,11 @@ class DIDAuthClient:
         Get authentication header.
         
         Args:
-            server_url: Server URL.
-            force_new: Whether to force generate a new DID authentication header.
+            server_url: Server URL
+            force_new: Whether to force generate a new DID authentication header
             
         Returns:
-            Dict[str, str]: HTTP header dictionary.
+            Dict[str, str]: HTTP header dictionary
         """
         domain = self._get_domain(server_url)
         
@@ -157,11 +157,11 @@ class DIDAuthClient:
         Update token from response headers.
         
         Args:
-            server_url: Server URL.
-            headers: Response header dictionary.
+            server_url: Server URL
+            headers: Response header dictionary
             
         Returns:
-            Optional[str]: Updated token, or None if no valid token is found.
+            Optional[str]: Updated token, or None if no valid token is found
         """
         domain = self._get_domain(server_url)
         auth_header = headers.get("Authorization")
@@ -180,7 +180,7 @@ class DIDAuthClient:
         Clear token for the specified domain.
         
         Args:
-            server_url: Server URL.
+            server_url: Server URL
         """
         domain = self._get_domain(server_url)
         if domain in self.tokens:
@@ -196,10 +196,15 @@ class DIDAuthClient:
 
 # Example usage
 async def example_usage():
-    # Create client
+    # Get current script directory
+    current_dir = Path(__file__).parent
+    # Get project root directory (parent of current directory)
+    base_dir = current_dir.parent
+    
+    # Create client with absolute paths
     client = DIDAuthClient(
-        did_document_path="use_did_test_public/did.json",
-        private_key_path="use_did_test_public/key-1_private.pem"
+        did_document_path=str(base_dir / "use_did_test_public/did.json"),
+        private_key_path=str(base_dir / "use_did_test_public/key-1_private.pem")
     )
     
     server_url = "http://localhost:9870"
@@ -218,7 +223,11 @@ async def example_usage():
             
             # If authentication is successful, update token
             if response.status == 200:
-                client.update_token(server_url, dict(response.headers))
+                token = client.update_token(server_url, dict(response.headers))
+                if token:
+                    print(f"Received token: {token[:30]}...")
+                else:
+                    print("No token received in response headers")
             
             # If authentication fails and a token was used, clear the token and retry
             elif response.status == 401:
