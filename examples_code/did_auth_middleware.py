@@ -13,7 +13,7 @@ from agent_connect.authentication import (
     resolve_did_wba_document,
     extract_auth_header_parts
 )
-from utils.auth_jwt import SECRET_KEY
+from examples_code.jwt_config import get_jwt_private_key, get_jwt_public_key
 
 # 定义豁免路径
 EXEMPT_PATHS = ["/openapi.yaml", "/logo.png", "/legal", "/ai-plugin.json", 
@@ -252,6 +252,10 @@ async def generate_did_auth_token(authorization: str, domain: str) -> str:
         
         # 解析DID文档
         did_doc = await resolve_did_wba_document(did)
+
+        logging.info(f"Resolved DID document: {did_doc}")
+        logging.info(f"Domain: {domain}")
+        logging.info(f"Authorization: {authorization}")
         
         # 验证签名
         is_valid, message = verify_auth_header_signature(authorization, did_doc, domain)
@@ -267,24 +271,10 @@ async def generate_did_auth_token(authorization: str, domain: str) -> str:
             "iat": current_time
         }
 
-        # 从环境变量获取私钥
-        private_key_path = os.getenv('JWT_SECRET_KEY_PATH')
-        if not private_key_path:
-            raise HTTPException(status_code=500, detail="JWT_SECRET_KEY_PATH environment variable not set")
-            
-        if private_key_path and os.path.exists(private_key_path):
-            try:
-                with open(private_key_path, 'r') as f:
-                    private_key = f.read().strip()
-            except Exception as e:
-                logging.error(f"Failed to read private key file: {e}")
-                private_key = None
-        else:
-            # 尝试直接从环境变量获取私钥
-            private_key = os.getenv('JWT_SECRET_KEY')
-            
+        # 使用jwt_config模块获取私钥
+        private_key = get_jwt_private_key()
         if not private_key:
-            logging.error("JWT private key not found in environment variable or file")
+            logging.error("JWT private key not found")
             raise HTTPException(status_code=500, detail="Server configuration error")
         
         token = jwt.encode(payload, private_key, algorithm="RS256")
@@ -309,8 +299,14 @@ async def verify_bearer_token(token: str) -> bool:
         HTTPException: 当 token 无效或过期时
     """
     try:
+        # 使用jwt_config模块获取公钥
+        public_key = get_jwt_public_key()
+        if not public_key:
+            logging.error("JWT public key not found")
+            raise HTTPException(status_code=500, detail="Server configuration error")
+            
         # 验证 JWT token
-        jwt.decode(token, SECRET_KEY, algorithms=["RS256"])
+        jwt.decode(token, public_key, algorithms=["RS256"])
         logging.info("Bearer token verification successful")
         return True
     except jwt.ExpiredSignatureError:
@@ -337,44 +333,57 @@ async def authenticate_did_request(request: Request, authorization: Optional[str
     try:
         # 检查路径是否豁免
         if request.url.path in EXEMPT_PATHS:
+            logging.info(f"Path {request.url.path} is in EXEMPT_PATHS, skipping authentication")
             return True, None
             
         # 如果未提供 authorization，尝试从请求头获取
         if not authorization:
             authorization = request.headers.get("Authorization")
+            logging.info(f"Got Authorization header from request: {authorization[:30]}...")
             
         if not authorization:
             logging.error("Authorization header missing")
             raise HTTPException(status_code=401, detail="Authorization header missing")
         
         auth_lower = authorization.lower()
+        logging.info(f"Authorization type: {'DIDwba' if 'didwba ' in auth_lower else 'Bearer' if 'bearer ' in auth_lower else 'Unknown'}")
         
         # 获取并验证域名
         domain = get_and_validate_domain(request)
+        logging.info(f"Validated domain: {domain}")
         
         # 处理 DID 认证
         if "didwba " in auth_lower:
+            logging.info("Processing DID authentication")
             # 提取 DID、nonce 和 timestamp
             did, nonce, timestamp, _, _ = extract_auth_header_parts(authorization)
+            logging.info(f"Extracted DID: {did}, nonce: {nonce}, timestamp: {timestamp}")
             
             # 验证 timestamp
             if not timestamp or not verify_timestamp(timestamp):
+                logging.error(f"Invalid or expired timestamp: {timestamp}")
                 raise HTTPException(
                     status_code=401, 
                     detail="Invalid or expired timestamp"
                 )
+            logging.info("Timestamp verification successful")
             
             # 验证并记录 nonce
             await verify_and_record_nonce(did, nonce)
+            logging.info("Nonce verification and recording successful")
             
             # 生成 token
             token = await generate_did_auth_token(authorization, domain)
+            logging.info(f"Generated token: {token[:30]}...")
             return True, token
         
         # 处理 Bearer token 认证
         elif "bearer " in auth_lower:
+            logging.info("Processing Bearer token authentication")
             token = authorization[authorization.lower().find("bearer ") + 7:]
+            logging.info(f"Extracted token: {token[:30]}...")
             if await verify_bearer_token(token):
+                logging.info("Bearer token verification successful")
                 return True, None
         
         else:
@@ -404,6 +413,7 @@ async def did_auth_middleware(request: Request, call_next):
     await check_and_cleanup_if_needed()
     
     try:
+        logging.info(f"Processing request to {request.url.path}")
         is_authenticated, token = await authenticate_did_request(request)
         
         if not is_authenticated:
@@ -415,7 +425,10 @@ async def did_auth_middleware(request: Request, call_next):
         
         if token:
             # 修改响应头，添加 token
+            logging.info(f"Adding token to response headers: {token[:30]}...")
             response.headers["Authorization"] = f"Bearer {token}"
+        else:
+            logging.info("No token generated, not adding to response headers")
             
         return response
         
