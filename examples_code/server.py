@@ -77,12 +77,12 @@ async def global_exception_handler(request: Request, exc: Exception):
         content={"message": "Internal server error"}
     )
 
+# 直接运行服务器的代码
 if __name__ == "__main__":
     # Run the server
     logger.info("Starting server on 0.0.0.0:8000")
     uvicorn.run(
-        "examples_code.server:app", 
+        app, 
         host="0.0.0.0", 
-        port=8000, 
-        reload=True
+        port=8000
     ) 
