@@ -28,35 +28,35 @@ logger = logging.getLogger(__name__)
 
 class DIDAuthClient:
     """
-    简化的DID认证客户端，提供HTTP认证头部
+    Simplified DID authentication client providing HTTP authentication headers.
     """
     
     def __init__(self, did_document_path: str, private_key_path: str):
         """
-        初始化DID认证客户端
+        Initialize the DID authentication client.
         
         Args:
-            did_document_path: DID文档路径
-            private_key_path: 私钥路径
+            did_document_path: Path to the DID document.
+            private_key_path: Path to the private key.
         """
         self.did_document_path = did_document_path
         self.private_key_path = private_key_path
         
-        # 状态变量
+        # State variables
         self.did_document = None
-        self.auth_headers = {}  # 按domain存储DID认证头
-        self.tokens = {}  # 按domain存储token
+        self.auth_headers = {}  # Store DID authentication headers by domain
+        self.tokens = {}  # Store tokens by domain
         
-        logger.info("DIDAuthClient初始化完成")
+        logger.info("DIDAuthClient initialized")
     
     def _get_domain(self, server_url: str) -> str:
-        """从URL获取域名"""
+        """Get domain from URL"""
         parsed_url = urlparse(server_url)
         domain = parsed_url.netloc.split(':')[0]
         return domain
     
     def _load_did_document(self) -> Dict:
-        """加载DID文档"""
+        """Load DID document"""
         try:
             if self.did_document:
                 return self.did_document
@@ -68,14 +68,14 @@ class DIDAuthClient:
                 did_document = json.load(f)
             
             self.did_document = did_document
-            logger.info(f"已加载DID文档: {did_path}")
+            logger.info(f"Loaded DID document: {did_path}")
             return did_document
         except Exception as e:
-            logger.error(f"加载DID文档出错: {e}")
+            logger.error(f"Error loading DID document: {e}")
             raise
     
     def _load_private_key(self) -> ec.EllipticCurvePrivateKey:
-        """加载私钥"""
+        """Load private key"""
         try:
             base_dir = Path(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
             key_path = base_dir / self.private_key_path
@@ -88,14 +88,14 @@ class DIDAuthClient:
                 password=None
             )
             
-            logger.debug(f"已加载私钥: {key_path}")
+            logger.debug(f"Loaded private key: {key_path}")
             return private_key
         except Exception as e:
-            logger.error(f"加载私钥出错: {e}")
+            logger.error(f"Error loading private key: {e}")
             raise
     
     def _sign_callback(self, content: bytes, method_fragment: str) -> bytes:
-        """签名回调函数"""
+        """Sign callback function"""
         try:
             private_key = self._load_private_key()
             signature = private_key.sign(
@@ -103,14 +103,14 @@ class DIDAuthClient:
                 ec.ECDSA(hashes.SHA256())
             )
             
-            logger.debug(f"已签名内容，方法片段: {method_fragment}")
+            logger.debug(f"Signed content, method fragment: {method_fragment}")
             return signature
         except Exception as e:
-            logger.error(f"签名内容出错: {e}")
+            logger.error(f"Error signing content: {e}")
             raise
     
     def _generate_auth_header(self, domain: str) -> str:
-        """生成DID认证头"""
+        """Generate DID authentication header"""
         try:
             did_document = self._load_did_document()
             
@@ -120,83 +120,83 @@ class DIDAuthClient:
                 self._sign_callback
             )
             
-            logger.info(f"已为域名 {domain} 生成认证头: {auth_header[:30]}...")
+            logger.info(f"Generated authentication header for domain {domain}: {auth_header[:30]}...")
             return auth_header
         except Exception as e:
-            logger.error(f"生成认证头出错: {e}")
+            logger.error(f"Error generating authentication header: {e}")
             raise
     
     def get_auth_header(self, server_url: str, force_new: bool = False) -> Dict[str, str]:
         """
-        获取认证头部
+        Get authentication header.
         
         Args:
-            server_url: 服务器URL
-            force_new: 是否强制生成新的DID认证头
+            server_url: Server URL.
+            force_new: Whether to force generate a new DID authentication header.
             
         Returns:
-            Dict[str, str]: HTTP头部字典
+            Dict[str, str]: HTTP header dictionary.
         """
         domain = self._get_domain(server_url)
         
-        # 如果有token且不强制生成新的认证头，则返回token
+        # If there is a token and not forcing a new authentication header, return the token
         if domain in self.tokens and not force_new:
             token = self.tokens[domain]
-            logger.info(f"使用域名 {domain} 的已有token")
+            logger.info(f"Using existing token for domain {domain}")
             return {"Authorization": f"Bearer {token}"}
         
-        # 否则生成或使用已有的DID认证头
+        # Otherwise, generate or use existing DID authentication header
         if domain not in self.auth_headers or force_new:
             self.auth_headers[domain] = self._generate_auth_header(domain)
         
-        logger.info(f"使用域名 {domain} 的DID认证头")
+        logger.info(f"Using DID authentication header for domain {domain}")
         return {"Authorization": self.auth_headers[domain]}
     
     def update_token(self, server_url: str, headers: Dict[str, str]) -> Optional[str]:
         """
-        从响应头中更新token
+        Update token from response headers.
         
         Args:
-            server_url: 服务器URL
-            headers: 响应头字典
+            server_url: Server URL.
+            headers: Response header dictionary.
             
         Returns:
-            Optional[str]: 更新的token，如果没有有效token则返回None
+            Optional[str]: Updated token, or None if no valid token is found.
         """
         domain = self._get_domain(server_url)
         auth_header = headers.get("Authorization")
         
         if auth_header and auth_header.lower().startswith("bearer "):
-            token = auth_header[7:]  # 移除"Bearer "前缀
+            token = auth_header[7:]  # Remove "Bearer " prefix
             self.tokens[domain] = token
-            logger.info(f"已更新域名 {domain} 的token: {token[:30]}...")
+            logger.info(f"Updated token for domain {domain}: {token[:30]}...")
             return token
         else:
-            logger.debug(f"响应头中没有域名 {domain} 的有效token")
+            logger.debug(f"No valid token found in response headers for domain {domain}")
             return None
     
     def clear_token(self, server_url: str) -> None:
         """
-        清除指定域名的token
+        Clear token for the specified domain.
         
         Args:
-            server_url: 服务器URL
+            server_url: Server URL.
         """
         domain = self._get_domain(server_url)
         if domain in self.tokens:
             del self.tokens[domain]
-            logger.info(f"已清除域名 {domain} 的token")
+            logger.info(f"Cleared token for domain {domain}")
         else:
-            logger.debug(f"域名 {domain} 没有存储的token")
+            logger.debug(f"No stored token for domain {domain}")
     
     def clear_all_tokens(self) -> None:
-        """清除所有域名的token"""
+        """Clear all tokens for all domains"""
         self.tokens.clear()
-        logger.info("已清除所有域名的token")
+        logger.info("Cleared all tokens for all domains")
 
-# 示例用法
+# Example usage
 async def example_usage():
-    # 创建客户端
+    # Create client
     client = DIDAuthClient(
         did_document_path="use_did_test_public/did.json",
         private_key_path="use_did_test_public/key-1_private.pem"
@@ -204,40 +204,40 @@ async def example_usage():
     
     server_url = "http://localhost:9870"
     
-    # 获取认证头部（首次调用，返回DID认证头）
+    # Get authentication header (first call, returns DID authentication header)
     headers = client.get_auth_header(server_url)
     
-    # 发送请求
+    # Send request
     async with aiohttp.ClientSession() as session:
         async with session.get(
             f"{server_url}/agents/travel/hotel/ad/ph/12345/ad.json", 
             headers=headers
         ) as response:
-            # 检查响应
-            print(f"状态码: {response.status}")
+            # Check response
+            print(f"Status code: {response.status}")
             
-            # 如果认证成功，更新token
+            # If authentication is successful, update token
             if response.status == 200:
                 client.update_token(server_url, dict(response.headers))
             
-            # 如果认证失败且使用的是token，清除token并重试
+            # If authentication fails and a token was used, clear the token and retry
             elif response.status == 401:
-                print("Token无效，清除并使用DID认证")
+                print("Invalid token, clearing and using DID authentication")
                 client.clear_token(server_url)
-                # 这里可以重试请求
+                # Retry request here
     
-    # 再次获取认证头部（如果上一步获取了token，这里会返回token认证头）
+    # Get authentication header again (if a token was obtained in the previous step, this will return a token authentication header)
     headers = client.get_auth_header(server_url)
-    print(f"第二次请求的头部: {headers}")
+    print(f"Header for second request: {headers}")
     
-    # 强制使用DID认证头
+    # Force use of DID authentication header
     headers = client.get_auth_header(server_url, force_new=True)
-    print(f"强制使用DID认证头: {headers}")
+    print(f"Forced use of DID authentication header: {headers}")
     
-    # 测试不同域名
+    # Test different domain
     another_server_url = "http://api.example.com"
     headers = client.get_auth_header(another_server_url)
-    print(f"另一个域名的头部: {headers}")
+    print(f"Header for another domain: {headers}")
 
 if __name__ == "__main__":
     asyncio.run(example_usage()) 
