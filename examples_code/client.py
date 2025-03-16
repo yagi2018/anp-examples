@@ -11,8 +11,9 @@ from pathlib import Path
 from typing import Tuple, Dict, Optional
 from urllib.parse import urlparse
 
-# Import DIDAuthClient
-from examples_code.did_auth_client import DIDAuthClient
+from agent_connect.authentication import (
+    DIDWbaAuthHeader
+)
 
 # Configure logging
 logging.basicConfig(
@@ -32,7 +33,7 @@ BASE_DIR = CURRENT_DIR.parent
 DID_DOCUMENT_PATH = str(BASE_DIR / "use_did_test_public/did.json")
 PRIVATE_KEY_PATH = str(BASE_DIR / "use_did_test_public/key-1_private.pem")
 
-async def test_did_auth(url: str, auth_client: DIDAuthClient) -> Optional[str]:
+async def test_did_auth(url: str, auth_client: DIDWbaAuthHeader) -> Optional[str]:
     """
     Test DID authentication and get token.
     
@@ -74,7 +75,7 @@ async def test_did_auth(url: str, auth_client: DIDAuthClient) -> Optional[str]:
         logger.error("Stack trace:", exc_info=True)
         return None
 
-async def verify_token(url: str, auth_client: DIDAuthClient) -> bool:
+async def verify_token(url: str, auth_client: DIDWbaAuthHeader) -> bool:
     """
     Verify token by making a request with it.
     
@@ -115,7 +116,7 @@ async def main():
     """Main function to run the client."""
     try:
         # 1. Create DID authentication client
-        auth_client = DIDAuthClient(
+        auth_client = DIDWbaAuthHeader(
             did_document_path=DID_DOCUMENT_PATH,
             private_key_path=PRIVATE_KEY_PATH
         )

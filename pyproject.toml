@@ -11,9 +11,11 @@ fastapi = "^0.115.4"
 pyjwt = "^2.8.0"
 uvicorn = "^0.32.0"
 requests = "^2.31.0"
-agent-connect = "^0.3.2"
-cryptography = "^42.0.0"
+agent-connect = "^0.3.5"
+cryptography = ">=43.0.3,<44.0.0"
 aiohttp = "^3.9.0"
+openai = "^1.66.3"
+pyyaml = "^6.0.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0.0"
