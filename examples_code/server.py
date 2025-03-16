@@ -13,8 +13,7 @@ from examples_code.did_auth_middleware import did_auth_middleware
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title="ANP Example Server",
     description="An example server using DID authentication middleware",
-    version="0.1.0"
+    version="0.1.0",
 )
 
 # Add CORS middleware
@@ -38,6 +37,7 @@ app.add_middleware(
 # Add the middleware
 app.middleware("http")(did_auth_middleware)
 
+
 @app.get("/")
 async def root():
     """
@@ -46,6 +46,7 @@ async def root():
     logger.info("Received request to root endpoint")
     return {"message": "Welcome to ANP Example Server"}
 
+
 @app.get("/test")
 async def test(request: Request):
     """
@@ -53,17 +54,18 @@ async def test(request: Request):
     """
     logger.info("Received test request")
     logger.info(f"Request headers: {request.headers}")
-    
+
     # Log if the request has an Authorization header
     auth_header = request.headers.get("Authorization")
     if auth_header:
         logger.info(f"Authorization header present: {auth_header[:30]}...")
     else:
         logger.info("No Authorization header present")
-    
+
     response = {"status": "OK", "message": "Test endpoint successful"}
     logger.info(f"Returning response: {response}")
     return response
+
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -72,17 +74,11 @@ async def global_exception_handler(request: Request, exc: Exception):
     """
     logger.error(f"Unhandled exception: {exc}")
     logger.error("Stack trace:", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={"message": "Internal server error"}
-    )
+    return JSONResponse(status_code=500, content={"message": "Internal server error"})
+
 
 # 直接运行服务器的代码
 if __name__ == "__main__":
     # Run the server
     logger.info("Starting server on 0.0.0.0:8000")
-    uvicorn.run(
-        app, 
-        host="0.0.0.0", 
-        port=8000
-    ) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)
