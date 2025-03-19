@@ -7,7 +7,7 @@ from pathlib import Path
 from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
-from anp_examples.anp_tool import ANPTool  # 导入ANPTool
+from anp_examples.anp_tool import ANPTool  # Import ANPTool
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -16,56 +16,56 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT_DIR / ".env")
 
 SEARCH_AGENT_PROMPT_TEMPLATE = """
-你是一个通用智能网络数据探索工具。你的目标是通过递归访问各种格式的数据（包括JSON-LD、YAML等），找到用户需要的信息、API，以完成指定的任务。
+You are a general-purpose intelligent network data exploration tool. Your goal is to find the information and APIs needed by the user by recursively accessing various formats of data (including JSON-LD, YAML, etc.) to complete the specified task.
 
-## 当前任务
+## Current Task
 {task_description}
 
-## 重要说明
-1. 你将收到一个起始URL({initial_url})，这是一个搜索智能体的描述文件
-2. 你需要理解这个搜索智能体的结构、功能和API用法
-3. 你需要像网络爬虫一样，不断从中发现并访问新的URL和API端点
-4. 你可以使用anp_tool工具来获取任何URL的内容
-5. 该工具可以处理多种格式的响应，包括：
-   - JSON格式：将直接解析为JSON对象
-   - YAML格式：将返回文本内容，你需要分析其结构
-   - 其他文本格式：将返回原始文本内容
-6. 阅读每个文档，寻找与任务相关的信息或API端点
-7. 你需要自己决定爬取路径，不要等待用户指示
-8. 注意：你最多可以爬取10个URL，超过此限制后必须结束搜索
+## Important Notes
+1. You will receive a starting URL ({initial_url}), which is a description file of a search agent.
+2. You need to understand the structure, functions, and API usage of this search agent.
+3. You need to continuously discover and access new URLs and API endpoints like a web crawler.
+4. You can use the anp_tool to get the content of any URL.
+5. This tool can handle multiple formats of responses, including:
+   - JSON format: will be directly parsed into a JSON object.
+   - YAML format: will return the text content, and you need to analyze its structure.
+   - Other text formats: will return the raw text content.
+6. Read each document to find information or API endpoints related to the task.
+7. You need to decide the crawling path yourself, do not wait for user instructions.
+8. Note: You can crawl up to 10 URLs, and you must end the search after exceeding this limit.
 
-## 爬取策略
-1. 首先获取初始URL内容，理解搜索智能体的结构和API
-2. 识别文档中的所有URL和链接，特别是serviceEndpoint、url、@id等字段
-3. 分析API文档，理解API的使用方法、参数和返回值
-4. 根据API文档，构造合适的请求找到所需信息
-5. 记录你访问过的所有URL，避免重复爬取
-6. 总结发现的所有相关信息，提供详细的建议
+## Crawling Strategy
+1. First, get the content of the initial URL and understand the structure and API of the search agent.
+2. Identify all URLs and links in the document, especially fields like serviceEndpoint, url, @id, etc.
+3. Analyze the API documentation to understand the usage, parameters, and return values of the API.
+4. Construct appropriate requests based on the API documentation to find the required information.
+5. Record all the URLs you have visited to avoid duplicate crawling.
+6. Summarize all the relevant information you have found and provide detailed suggestions.
 
-## 工作流程
-1. 获取起始URL内容，理解搜索智能体的功能
-2. 分析内容，找出所有可能的链接和API文档
-3. 解析API文档，理解API的使用方法
-4. 根据任务需求，构造请求获取所需信息
-5. 继续探索相关链接，直到找到足够的信息
-6. 总结信息，提供最适合用户的建议
+## Workflow
+1. Get the content of the initial URL and understand the functions of the search agent.
+2. Analyze the content to find all possible links and API documentation.
+3. Parse the API documentation to understand the usage of the API.
+4. Construct requests to get the required information based on the task requirements.
+5. Continue to explore related links until enough information is found.
+6. Summarize the information and provide the most suitable suggestions for the user.
 
-## JSON-LD数据解析提示
-1. 注意@context字段，它定义了数据的语义上下文
-2. @type字段表示实体类型，帮助你理解数据的含义
-3. @id字段通常是一个可以进一步访问的URL
-4. 寻找serviceEndpoint、url等字段，它们通常指向API或更多数据
+## JSON-LD Data Parsing Tips
+1. Pay attention to the @context field, which defines the semantic context of the data.
+2. The @type field indicates the type of entity, helping you understand the meaning of the data.
+3. The @id field is usually a URL that can be further accessed.
+4. Look for fields like serviceEndpoint, url, etc., which usually point to APIs or more data.
 
-提供详细信息和清晰解释，让用户理解你找到的信息和你的推荐理由。
+Provide detailed information and clear explanations to help the user understand the information you found and your recommendations.
 """
 
-# 全局变量
+# Global variable
 initial_url = "https://agent-search.ai/ad.json"
 
 
-# 定义可用的工具
+# Define available tools
 def get_available_tools(anp_tool_instance):
-    """获取可用的工具列表"""
+    """Get the list of available tools"""
     return [
         {
             "type": "function",
@@ -85,7 +85,7 @@ async def handle_tool_call(
     crawled_documents: List[Dict],
     visited_urls: set,
 ) -> None:
-    """处理工具调用"""
+    """Handle tool call"""
     function_name = tool_call.function.name
     function_args = json.loads(tool_call.function.arguments)
 
@@ -97,13 +97,13 @@ async def handle_tool_call(
         body = function_args.get("body")
 
         try:
-            # 使用ANPTool获取URL内容
+            # Use ANPTool to get URL content
             result = await anp_tool.execute(
                 url=url, method=method, headers=headers, params=params, body=body
             )
             logging.info(f"ANPTool response [url: {url}]")
 
-            # 记录访问过的URL和获取到的内容
+            # Record visited URLs and obtained content
             visited_urls.add(url)
             crawled_documents.append({"url": url, "method": method, "content": result})
 
@@ -139,28 +139,28 @@ async def simple_crawl(
     max_documents: int = 10,
 ) -> Dict[str, Any]:
     """
-    简化的爬取逻辑：让模型自主决定爬取路径
+    Simplified crawling logic: let the model decide the crawling path autonomously
 
     Args:
-        user_input: 用户输入的任务描述
-        task_type: 任务类型
-        did_document_path: DID文档路径
-        private_key_path: 私钥路径
-        max_documents: 最大爬取文档数量
+        user_input: Task description input by the user
+        task_type: Task type
+        did_document_path: DID document path
+        private_key_path: Private key path
+        max_documents: Maximum number of documents to crawl
 
     Returns:
-        包含爬取结果的字典
+        Dictionary containing the crawl results
     """
-    # 初始化变量
+    # Initialize variables
     visited_urls = set()
     crawled_documents = []
 
-    # 初始化ANPTool
+    # Initialize ANPTool
     anp_tool = ANPTool(
         did_document_path=did_document_path, private_key_path=private_key_path
     )
 
-    # 初始化Azure OpenAI客户端
+    # Initialize Azure OpenAI client
     client = AsyncAzureOpenAI(
         api_key=os.getenv("AZURE_OPENAI_API_KEY"),
         api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
@@ -168,7 +168,7 @@ async def simple_crawl(
         azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
     )
 
-    # 获取初始URL内容
+    # Get initial URL content
     try:
         initial_content = await anp_tool.execute(url=initial_url)
         visited_urls.add(initial_url)
@@ -176,17 +176,17 @@ async def simple_crawl(
             {"url": initial_url, "method": "GET", "content": initial_content}
         )
 
-        logging.info(f"成功获取初始URL: {initial_url}")
+        logging.info(f"Successfully obtained initial URL: {initial_url}")
     except Exception as e:
-        logging.error(f"获取初始URL {initial_url} 失败: {str(e)}")
+        logging.error(f"Failed to obtain initial URL {initial_url}: {str(e)}")
         return {
-            "content": f"获取初始URL失败: {str(e)}",
+            "content": f"Failed to obtain initial URL: {str(e)}",
             "type": "error",
             "visited_urls": [],
             "crawled_documents": [],
         }
 
-    # 创建初始消息
+    # Create initial message
     formatted_prompt = SEARCH_AGENT_PROMPT_TEMPLATE.format(
         task_description=user_input, initial_url=initial_url
     )
@@ -196,29 +196,29 @@ async def simple_crawl(
         {"role": "user", "content": user_input},
         {
             "role": "system",
-            "content": f"我已经获取了初始URL的内容。以下是搜索智能体的描述数据:\n\n```json\n{json.dumps(initial_content, ensure_ascii=False, indent=2)}\n```\n\n请分析这个数据，理解搜索智能体的功能和API用法。找出你需要访问的链接，通过anp_tool工具来获取更多信息，完成用户的任务。",
+            "content": f"I have obtained the content of the initial URL. Here is the description data of the search agent:\n\n```json\n{json.dumps(initial_content, ensure_ascii=False, indent=2)}\n```\n\nPlease analyze this data, understand the functions and API usage of the search agent. Find the links you need to visit, and use the anp_tool to get more information to complete the user's task.",
         },
     ]
 
-    # 开始对话循环
+    # Start conversation loop
     current_iteration = 0
 
     while current_iteration < max_documents:
         current_iteration += 1
-        logging.info(f"开始第 {current_iteration}/{max_documents} 次爬取")
+        logging.info(f"Starting crawl iteration {current_iteration}/{max_documents}")
 
-        # 检查是否已达到最大爬取文档数
+        # Check if the maximum number of documents to crawl has been reached
         if len(crawled_documents) >= max_documents:
-            logging.info(f"已达到最大爬取文档数 {max_documents}，停止爬取")
-            # 添加一条消息告知模型已达到最大爬取数
+            logging.info(f"Reached the maximum number of documents to crawl {max_documents}, stopping crawl")
+            # Add a message to inform the model that the maximum number of crawls has been reached
             messages.append(
                 {
                     "role": "system",
-                    "content": f"你已经爬取了 {len(crawled_documents)} 个文档，已达到最大爬取数量限制 {max_documents}。请根据已获取的信息做出最终总结。",
+                    "content": f"You have crawled {len(crawled_documents)} documents, reaching the maximum crawl limit of {max_documents}. Please make a final summary based on the information obtained.",
                 }
             )
 
-        # 获取模型响应
+        # Get model response
         completion = await client.chat.completions.create(
             model=os.getenv("AZURE_OPENAI_MODEL"),
             messages=messages,
@@ -235,30 +235,30 @@ async def simple_crawl(
             }
         )
 
-        # 检查是否结束对话
+        # Check if the conversation should end
         if not response_message.tool_calls:
-            logging.info("模型未请求任何工具调用，结束爬取")
+            logging.info("The model did not request any tool calls, ending crawl")
             break
 
-        # 处理工具调用
+        # Handle tool calls
         for tool_call in response_message.tool_calls:
             await handle_tool_call(
                 tool_call, messages, anp_tool, crawled_documents, visited_urls
             )
 
-            # 如果达到最大爬取文档数，停止处理工具调用
+            # If the maximum number of documents to crawl is reached, stop handling tool calls
             if len(crawled_documents) >= max_documents:
                 break
 
-        # 如果达到最大爬取文档数，进行一次最终的总结
+        # If the maximum number of documents to crawl is reached, make a final summary
         if (
             len(crawled_documents) >= max_documents
             and current_iteration < max_documents
         ):
-            logging.info(f"已达到最大爬取文档数 {max_documents}，进行最终总结")
+            logging.info(f"Reached the maximum number of documents to crawl {max_documents}, making final summary")
             continue
 
-    # 创建结果
+    # Create result
     result = {
         "content": response_message.content,
         "type": "text",
@@ -271,9 +271,9 @@ async def simple_crawl(
 
 
 async def main():
-    """主函数"""
+    """Main function"""
 
-    # 获取DID路径
+    # Get DID path
     current_dir = Path(__file__).parent
     base_dir = current_dir.parent
     did_document_path = str(base_dir / "use_did_test_public/did.json")
@@ -281,34 +281,34 @@ async def main():
 
     from datetime import datetime, timedelta
 
-    # 获取当前日期加3天
+    # Get the current date plus 3 days
     booking_date = (datetime.now() + timedelta(days=3)).strftime("%Y年%m月%d日")
 
-    # 测试任务
+    # Test task
     task = {
-        "input": f"我需要预订杭州的一个酒店：{booking_date}，1天的酒店，经纬度（120.026208, 30.279212）。请一步步处理：第一步，你自己选择一个不错的酒店，第二步，帮我选择一个房间。最后告诉我你选择的详细信息",
+        "input": f"I need to book a hotel in Hangzhou: {booking_date}, for 1 day, coordinates (120.026208, 30.279212). Please handle it step by step: First, choose a good hotel yourself, then help me choose a room. Finally, tell me the details of your choice.",
         "type": "hotel_booking",
     }
 
-    print(f"\n=== 测试任务: {task['type']} ===")
-    print(f"用户输入: {task['input']}")
+    print(f"\n=== Test Task: {task['type']} ===")
+    print(f"User Input: {task['input']}")
 
-    # 使用简化的爬取逻辑
+    # Use simplified crawling logic
     result = await simple_crawl(
         task["input"],
         task["type"],
         did_document_path=did_document_path,
         private_key_path=private_key_path,
-        max_documents=10,  # 最多爬取10个文档
+        max_documents=10,  # Crawl up to 10 documents
     )
 
-    # 打印结果
-    print("\n=== 搜索智能体响应 ===")
+    # Print result
+    print("\n=== Search Agent Response ===")
     print(result["content"])
-    print("\n=== 访问过的URL ===")
+    print("\n=== Visited URLs ===")
     for url in result.get("visited_urls", []):
         print(url)
-    print(f"\n=== 总共爬取了 {len(result.get('crawled_documents', []))} 个文档 ===")
+    print(f"\n=== Crawled a total of {len(result.get('crawled_documents', []))} documents ===")
 
 
 if __name__ == "__main__":

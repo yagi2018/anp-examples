@@ -8,7 +8,7 @@ import logging
 import argparse
 from pathlib import Path
 from anp_examples.anp_tool import ANPTool
-from anp_examples.anp_agent import simple_crawl
+from anp_examples.simple_example import simple_crawl
 from anp_examples.utils.log_base import set_log_color_level
 
 
