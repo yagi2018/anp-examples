@@ -17,4 +17,4 @@ pip install -r "$CURRENT_DIR/backend/requirements.txt"
 # 启动服务器
 echo "正在启动智能体网络搜索服务..."
 cd "$CURRENT_DIR/backend"
-python main.py 
+python anp_examples_backend.py
