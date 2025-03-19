@@ -15,4 +15,4 @@ poetry install
 # 启动服务器
 echo "正在启动智能体网络搜索服务..."
 cd "$CURRENT_DIR/backend"
-poetry run python main.py 
+poetry run python anp_examples_backend.py
