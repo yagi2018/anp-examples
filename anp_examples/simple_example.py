@@ -15,14 +15,18 @@ ROOT_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables
 load_dotenv(ROOT_DIR / ".env")
 
-SEARCH_AGENT_PROMPT_TEMPLATE = """
+from datetime import datetime
+
+current_date = datetime.now().strftime("%Y-%m-%d")
+
+SEARCH_AGENT_PROMPT_TEMPLATE = f"""
 You are a general-purpose intelligent network data exploration tool. Your goal is to find the information and APIs needed by the user by recursively accessing various formats of data (including JSON-LD, YAML, etc.) to complete the specified task.
 
 ## Current Task
-{task_description}
+{{task_description}}
 
 ## Important Notes
-1. You will receive a starting URL ({initial_url}), which is a description file of a search agent.
+1. You will receive a starting URL ({{initial_url}}), which is a description file of a search agent.
 2. You need to understand the structure, functions, and API usage of this search agent.
 3. You need to continuously discover and access new URLs and API endpoints like a web crawler.
 4. You can use the anp_tool to get the content of any URL.
@@ -57,6 +61,9 @@ You are a general-purpose intelligent network data exploration tool. Your goal i
 4. Look for fields like serviceEndpoint, url, etc., which usually point to APIs or more data.
 
 Provide detailed information and clear explanations to help the user understand the information you found and your recommendations.
+
+## Date
+Current Date: {current_date}
 """
 
 # Global variable
@@ -137,6 +144,7 @@ async def simple_crawl(
     did_document_path: Optional[str] = None,
     private_key_path: Optional[str] = None,
     max_documents: int = 10,
+    initial_url: str = "https://agent-search.ai/ad.json",
 ) -> Dict[str, Any]:
     """
     Simplified crawling logic: let the model decide the crawling path autonomously
@@ -147,6 +155,7 @@ async def simple_crawl(
         did_document_path: DID document path
         private_key_path: Private key path
         max_documents: Maximum number of documents to crawl
+        initial_url: Initial URL to start crawling from
 
     Returns:
         Dictionary containing the crawl results
