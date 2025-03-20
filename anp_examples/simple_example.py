@@ -271,7 +271,7 @@ async def simple_crawl(
     result = {
         "content": response_message.content,
         "type": "text",
-        "visited_urls": list(visited_urls),
+        "visited_urls": [doc["url"] for doc in crawled_documents],
         "crawled_documents": crawled_documents,
         "task_type": task_type,
     }
