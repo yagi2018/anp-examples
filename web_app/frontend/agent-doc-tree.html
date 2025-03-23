@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能体文档树结构</title>
+    <title>智能体文档树结构 | Agent Document Structure</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
@@ -45,19 +45,35 @@
             color: #F9FAFB;
             border-color: #374151;
         }
+        
+        /* 语言切换样式 */
+        .lang-zh, .lang-en {
+          display: none;
+        }
+        .lang-zh.active, .lang-en.active {
+          display: inline;
+        }
+        span.lang-zh.active, span.lang-en.active {
+          display: inline-block;
+        }
     </style>
 </head>
 <body>
     <div class="container mx-auto px-4 py-8">
         <nav class="flex justify-between items-center mb-8">
-            <button onclick="window.location.href='/'" 
+            <button onclick="window.location.href='https://service.agent-network-protocol.com/anp-explorer/'" 
                     class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
-                返回
+                <span class="lang-zh">返回</span>
+                <span class="lang-en">Back</span>
             </button>
             <div class="flex items-center space-x-4">
+                <button id="lang-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
+                    <span class="lang-zh">EN</span>
+                    <span class="lang-en">中文</span>
+                </button>
                 <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 focus:outline-none">
                     <svg id="moon-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
@@ -69,8 +85,14 @@
             </div>
         </nav>
 
-        <h1 class="text-3xl font-bold mb-6 text-center">智能体文档树结构</h1>
-        <p class="text-gray-600 dark:text-gray-400 mb-8 text-center">可视化智能体描述文件及其关联文档的链接关系</p>
+        <h1 class="text-3xl font-bold mb-6 text-center">
+            <span class="lang-zh">智能体文档树结构</span>
+            <span class="lang-en">Agent Document Structure</span>
+        </h1>
+        <p class="text-gray-600 dark:text-gray-400 mb-8 text-center">
+            <span class="lang-zh">可视化智能体描述文件及其关联文档的链接关系</span>
+            <span class="lang-en">Visualize the connections between agent description files and their linked documents</span>
+        </p>
 
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
             <div id="network-container"></div>
@@ -84,7 +106,10 @@
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </div>
-                <p class="text-gray-700 dark:text-gray-300 text-lg">正在获取文档结构...</p>
+                <p class="text-gray-700 dark:text-gray-300 text-lg">
+                    <span class="lang-zh">正在获取文档结构...</span>
+                    <span class="lang-en">Loading document structure...</span>
+                </p>
             </div>
         </div>
     </div>
@@ -93,6 +118,17 @@
         let network = null;
         let nodes = new vis.DataSet();
         let edges = new vis.DataSet();
+        
+        // 应用语言
+        function applyLanguage() {
+            const currentLang = localStorage.getItem('language') || 'zh';
+            document.querySelectorAll('.lang-zh, .lang-en').forEach(el => {
+                el.classList.remove('active');
+            });
+            document.querySelectorAll(`.lang-${currentLang}`).forEach(el => {
+                el.classList.add('active');
+            });
+        }
         
         // 应用深色或浅色模式
         function applyTheme() {
@@ -111,6 +147,14 @@
                 document.getElementById('sun-icon').classList.add('hidden');
             }
         }
+        
+        // 切换语言
+        document.getElementById('lang-toggle').addEventListener('click', () => {
+            const currentLang = localStorage.getItem('language') || 'zh';
+            const newLang = currentLang === 'zh' ? 'en' : 'zh';
+            localStorage.setItem('language', newLang);
+            applyLanguage();
+        });
         
         // 切换主题
         document.getElementById('theme-toggle').addEventListener('click', () => {
@@ -175,6 +219,9 @@
 
         // 处理节点点击事件
         async function showDocumentContent(url, documents) {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
             // 创建加载中弹窗
             const loadingDialog = document.createElement('div');
             loadingDialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
@@ -188,7 +235,7 @@
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
                     </div>
-                    <p class="text-gray-700 dark:text-gray-300 text-lg">正在获取文档内容...</p>
+                    <p class="text-gray-700 dark:text-gray-300 text-lg">${currentLang === 'zh' ? '正在获取文档内容...' : 'Loading document content...'}</p>
                 </div>
             `;
             
@@ -223,7 +270,7 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API请求错误: ${response.status}`);
+                    throw new Error(`${currentLang === 'zh' ? 'API请求错误' : 'API request error'}: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -245,12 +292,15 @@
                 closeLoadingDialog();
                 
                 // 显示错误弹窗
-                showErrorDialog(`无法获取文档内容: ${error.message}`);
+                showErrorDialog(`${currentLang === 'zh' ? '无法获取文档内容' : 'Failed to get document content'}: ${error.message}`);
             }
         }
         
         // 显示文档内容弹窗
         function showDocumentDialog(url, content) {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
             const dialog = document.createElement('div');
             dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
             dialog.id = 'doc-content-dialog';
@@ -307,6 +357,9 @@
         
         // 显示错误弹窗
         function showErrorDialog(message) {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
             const dialog = document.createElement('div');
             dialog.className = 'fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50';
             dialog.id = 'error-dialog';
@@ -317,12 +370,12 @@
                         <svg class="w-6 h-6 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        <h3 class="text-lg font-bold text-red-600 dark:text-red-400">错误</h3>
+                        <h3 class="text-lg font-bold text-red-600 dark:text-red-400">${currentLang === 'zh' ? '错误' : 'Error'}</h3>
                     </div>
                     <p class="text-gray-700 dark:text-gray-300 mb-4">${message}</p>
                     <div class="text-right">
                         <button id="close-error-dialog" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            关闭
+                            ${currentLang === 'zh' ? '关闭' : 'Close'}
                         </button>
                     </div>
                 </div>
@@ -461,13 +514,16 @@
 
         // 加载文档树数据
         async function loadDocTree() {
+            // 获取当前语言
+            const currentLang = localStorage.getItem('language') || 'zh';
+            
             const agentUrl = getParameterByName('url');
             if (!agentUrl) {
                 document.getElementById('loading').innerHTML = `
                     <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">错误：缺少URL参数</p>
-                        <button onclick="window.location.href='/'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            返回首页
+                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误：缺少URL参数' : 'Error: Missing URL parameter'}</p>
+                        <button onclick="window.location.href='https://service.agent-network-protocol.com/anp-explorer/'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
                         </button>
                     </div>
                 `;
@@ -477,7 +533,7 @@
             // 添加ESC键关闭功能
             const escKeyInitHandler = (e) => {
                 if (e.key === 'Escape') {
-                    window.location.href = '/';
+                    window.location.href = 'https://service.agent-network-protocol.com/anp-explorer/';
                 }
             };
             
@@ -496,7 +552,7 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error(`API请求错误: ${response.status}`);
+                    throw new Error(`${currentLang === 'zh' ? 'API请求错误' : 'API request error'}: ${response.status}`);
                 }
                 
                 const data = await response.json();
@@ -514,9 +570,9 @@
                 console.error('请求错误:', error);
                 document.getElementById('loading').innerHTML = `
                     <div class="bg-white dark:bg-gray-800 rounded-lg p-6">
-                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">错误：${error.message}</p>
-                        <button onclick="window.location.href='/'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
-                            返回首页
+                        <p class="text-red-600 dark:text-red-400 text-lg mb-4">${currentLang === 'zh' ? '错误' : 'Error'}: ${error.message}</p>
+                        <button onclick="window.location.href='https://service.agent-network-protocol.com/anp-explorer/'" class="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700">
+                            ${currentLang === 'zh' ? '返回首页' : 'Back to Home'}
                         </button>
                     </div>
                 `;
@@ -527,7 +583,14 @@
 
         // 页面加载完成后初始化
         document.addEventListener('DOMContentLoaded', () => {
+            // 先应用上一页面的语言设置
+            const urlLang = getParameterByName('lang');
+            if (urlLang && (urlLang === 'zh' || urlLang === 'en')) {
+                localStorage.setItem('language', urlLang);
+            }
+            
             applyTheme();
+            applyLanguage();
             loadDocTree();
         });
     </script>

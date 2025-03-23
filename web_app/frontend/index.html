@@ -188,11 +188,14 @@
     }
 
     /* 语言切换 */
-    .lang-content {
+    .lang-zh, .lang-en {
       display: none;
     }
-    .lang-content.active {
+    .lang-zh.active, .lang-en.active {
       display: block;
+    }
+    span.lang-zh.active, span.lang-en.active {
+      display: inline-block;
     }
   </style>
 </head>
@@ -349,34 +352,27 @@
 
   <script>
     // 语言切换
+    function applyLanguage() {
+      const currentLang = localStorage.getItem('language') || 'zh';
+      document.querySelectorAll('.lang-zh, .lang-en').forEach(el => {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll(`.lang-${currentLang}`).forEach(el => {
+        el.classList.add('active');
+      });
+    }
+    
     document.addEventListener('DOMContentLoaded', () => {
-      // 默认显示中文
-      const zhElements = document.querySelectorAll('.lang-zh');
-      const enElements = document.querySelectorAll('.lang-en');
-      
-      // 从本地存储获取语言设置
-      const savedLang = localStorage.getItem('language') || 'zh';
-      
-      // 设置初始语言
-      setLanguage(savedLang);
+      // 应用语言设置
+      applyLanguage();
       
       // 添加语言切换事件
       document.getElementById('lang-toggle').addEventListener('click', () => {
         const currentLang = localStorage.getItem('language') || 'zh';
         const newLang = currentLang === 'zh' ? 'en' : 'zh';
-        setLanguage(newLang);
         localStorage.setItem('language', newLang);
+        applyLanguage();
       });
-      
-      function setLanguage(lang) {
-        if (lang === 'zh') {
-          zhElements.forEach(el => el.style.display = 'inline-block');
-          enElements.forEach(el => el.style.display = 'none');
-        } else {
-          zhElements.forEach(el => el.style.display = 'none');
-          enElements.forEach(el => el.style.display = 'inline-block');
-        }
-      }
     });
     
     // 暗黑模式切换
@@ -408,78 +404,19 @@
       });
     });
     
-    // API 请求函数
-    async function submitQuery() {
-      const queryText = document.getElementById('query').value.trim();
-      const agentUrl = document.getElementById('agent-url').value.trim() || "https://agent-search.ai/ad.json";
-      
-      if (!queryText) {
-        alert(document.querySelector('.lang-zh').style.display !== 'none' ? '请输入问题' : 'Please enter a question');
-        return;
-      }
-      
-      // 显示加载状态
-      document.getElementById('response-loader').classList.remove('hidden');
-      document.getElementById('response-content').classList.add('hidden');
-      
-      // 清空 URL 列表
-      const urlsContainer = document.getElementById('urls-container');
-      const isZhLang = document.querySelector('.lang-zh').style.display !== 'none';
-      urlsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 italic">${isZhLang ? '正在搜索...' : 'Searching...'}</p>`;
-      document.getElementById('url-count').textContent = '0';
-      
-      try {
-        const response = await fetch('/anp-explorer/api/query', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            query: queryText,
-            agent_url: agentUrl || null,
-          }),
-        });
-        
-        if (!response.ok) {
-          throw new Error(isZhLang ? `API 请求错误: ${response.status}` : `API request error: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // 更新响应内容
-        const responseContent = document.getElementById('response-content');
-        responseContent.innerHTML = `<div class="markdown-body">${marked.parse(data.content)}</div>`;
-        responseContent.classList.remove('hidden');
-        
-        // 更新 URL 列表
-        updateUrlList(data.visited_urls, data.crawled_documents);
-        
-      } catch (error) {
-        console.error('请求错误:', error);
-        const isZhLang = document.querySelector('.lang-zh').style.display !== 'none';
-        document.getElementById('response-content').innerHTML = `
-          <div class="bg-red-100 dark:bg-red-900 p-4 rounded-md">
-            <h3 class="text-red-700 dark:text-red-300 font-bold">${isZhLang ? '出错了' : 'Error'}</h3>
-            <p>${error.message}</p>
-          </div>
-        `;
-        document.getElementById('response-content').classList.remove('hidden');
-      } finally {
-        // 隐藏加载状态
-        document.getElementById('response-loader').classList.add('hidden');
-      }
-    }
-    
     // 更新 URL 列表
     function updateUrlList(urls, documents) {
       const urlsContainer = document.getElementById('urls-container');
       const urlCount = document.getElementById('url-count');
-      const isZhLang = document.querySelector('.lang-zh').style.display !== 'none';
+      const currentLang = localStorage.getItem('language') || 'zh';
       
       urlCount.textContent = urls.length;
       
       if (urls.length === 0) {
-        urlsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 italic">${isZhLang ? '尚未访问任何 URL' : 'No URLs visited yet'}</p>`;
+        urlsContainer.innerHTML = `<p class="text-gray-500 dark:text-gray-400 italic">
+          <span class="lang-zh active">${currentLang === 'zh' ? '尚未访问任何 URL' : ''}</span>
+          <span class="lang-en active">${currentLang === 'en' ? 'No URLs visited yet' : ''}</span>
+        </p>`;
         return;
       }
       
@@ -538,6 +475,74 @@
       detailsContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
+    // 请求处理函数
+    async function processRequest() {
+      try {
+        // 获取输入
+        const query = document.getElementById('query').value.trim();
+        const agentUrl = document.getElementById('agent-url').value.trim();
+        
+        // 验证输入
+        const currentLang = localStorage.getItem('language') || 'zh';
+        if (!query) {
+          alert(currentLang === 'zh' ? '请输入问题' : 'Please enter a question');
+          return;
+        }
+        
+        // 显示加载状态
+        document.getElementById('response-loader').classList.remove('hidden');
+        document.getElementById('response-content').classList.add('hidden');
+        
+        // 发送请求
+        const response = await fetch('/anp-explorer/api/query', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: query,
+            agent_url: agentUrl
+          }),
+        });
+        
+        if (!response.ok) {
+          throw new Error(`${currentLang === 'zh' ? 'API请求错误' : 'API request error'}: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // 显示响应
+        const responseLoader = document.getElementById('response-loader');
+        responseLoader.classList.add('hidden');
+        
+        const responseContent = document.getElementById('response-content');
+        responseContent.innerHTML = `<div class="markdown-body">${marked.parse(data.content)}</div>`;
+        responseContent.classList.remove('hidden');
+        
+        // 更新 URL 列表
+        updateUrlList(data.visited_urls, data.crawled_documents);
+        
+      } catch (error) {
+        console.error('请求错误:', error);
+        const currentLang = localStorage.getItem('language') || 'zh';
+        document.getElementById('response-content').innerHTML = `
+          <div class="bg-red-100 dark:bg-red-900 p-4 rounded-md">
+            <h3 class="text-red-700 dark:text-red-300 font-bold">${currentLang === 'zh' ? '出错了' : 'Error'}</h3>
+            <p>${error.message}</p>
+          </div>
+        `;
+        document.getElementById('response-content').classList.remove('hidden');
+      } finally {
+        // 隐藏加载状态
+        document.getElementById('response-loader').classList.add('hidden');
+      }
+    }
+    
+    // API 请求函数
+    function submitQuery() {
+      processRequest();
+    }
+    
     // 监听提交按钮点击事件
     document.getElementById('submit-btn').addEventListener('click', submitQuery);
     
@@ -547,7 +552,7 @@
     // 监听输入框回车事件
     document.getElementById('query').addEventListener('keydown', (event) => {
       if (event.key === 'Enter' && event.ctrlKey) {
-        submitQuery();
+        processRequest();
       }
     });
     
@@ -558,8 +563,11 @@
     function analyzeAgentDocStructure() {
       const agentUrl = document.getElementById('agent-url').value.trim() || "https://agent-search.ai/ad.json";
       
-      // 跳转到文档结构页面
-      window.open(`agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}`, '_blank');
+      // 获取当前语言设置
+      const currentLang = localStorage.getItem('language') || 'zh';
+      
+      // 在新页面打开智能体文档树页面，并传递当前语言
+      window.open(`/anp-explorer/agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}&lang=${currentLang}`, '_blank');
     }
   </script>
 </body>
