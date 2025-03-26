@@ -240,7 +240,7 @@
             <span class="lang-zh">您的问题</span>
             <span class="lang-en">Your Question</span>
           </label>
-          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="例如：帮我预订杭州的酒店，1晚，今天入住，价格500以下? / e.g., Help me book a hotel in Hangzhou for 1 night, check in today, and the price is below 500?"></textarea>
+          <textarea id="query" rows="3" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="例如：帮我查看最近几天杭州的天气 / e.g., Help me check the weather in Hangzhou for the past few days"></textarea>
         </div>
         
         <div class="mb-4">
@@ -248,7 +248,7 @@
             <span class="lang-zh">智能体 URL（选填）</span>
             <span class="lang-en">Agent URL (Optional)</span>
           </label>
-          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="https://agent-search.ai/ad.json">
+          <input type="text" id="agent-url" class="w-full px-4 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600" placeholder="https://agent-weather.xyz/ad.json">
         </div>
         
         <div class="text-right flex justify-end space-x-3">
@@ -561,7 +561,7 @@
     
     // 解析智能体文档结构
     function analyzeAgentDocStructure() {
-      const agentUrl = document.getElementById('agent-url').value.trim() || "https://agent-search.ai/ad.json";
+      const agentUrl = document.getElementById('agent-url').value.trim() || "https://agent-weather.xyz/ad.json";
       
       // 获取当前语言设置
       const currentLang = localStorage.getItem('language') || 'zh';

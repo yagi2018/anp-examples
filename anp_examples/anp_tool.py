@@ -12,11 +12,10 @@ from agent_connect.authentication import DIDWbaAuthHeader
 
 class ANPTool:
     name: str = "anp_tool"
-    description: str = """Use Agent Network Protocol (ANP) to interact with other agents.
-1. For the first use, please enter the URL: https://agent-search.ai/ad.json, which is an agent search service. You can use the interfaces inside to query agents that can provide hotels, tickets, and attractions.
-2. After receiving the agent's description document, you can crawl data based on the data link URL in the agent's description document.
-3. During the process, you can call the API to complete the service until you think the task is completed.
-4. Note, any URL obtained using ANPTool must be called using ANPTool, do not call it directly yourself.
+    description: str = """使用智能体网络协议（ANP）与其他智能体进行交互。
+1. 使用时，需要输入一个文档的URL，以及HTTP方法。
+2. 在工具内部，会对URL进行解析，并根据解析结果调用对应的API。
+3. 注意，使用ANPTool获取的任何URL都必须使用ANPTool进行调用，不要自己直接调用。
 """
     parameters: dict = {
         "type": "object",
