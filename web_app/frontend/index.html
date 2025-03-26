@@ -493,8 +493,11 @@
         document.getElementById('response-loader').classList.remove('hidden');
         document.getElementById('response-content').classList.add('hidden');
         
+        // 获取API基础路径（根据当前URL判断是否使用Nginx路径前缀）
+        const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+        
         // 发送请求
-        const response = await fetch('/anp-explorer/api/query', {
+        const response = await fetch(`${BASE_PATH}/api/query`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -566,8 +569,11 @@
       // 获取当前语言设置
       const currentLang = localStorage.getItem('language') || 'zh';
       
+      // 获取API基础路径
+      const BASE_PATH = window.location.pathname.startsWith('/anp-explorer/') ? '/anp-explorer' : '';
+      
       // 在新页面打开智能体文档树页面，并传递当前语言
-      window.open(`/anp-explorer/agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}&lang=${currentLang}`, '_blank');
+      window.open(`${BASE_PATH}/agent-doc-tree.html?url=${encodeURIComponent(agentUrl)}&lang=${currentLang}`, '_blank');
     }
   </script>
 </body>
