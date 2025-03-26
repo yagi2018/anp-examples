@@ -28,16 +28,18 @@ async def read_root():
         return content
     except Exception as e:
         logging.error(f"Error reading frontend page: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error reading frontend page: {str(e)}")
+        raise HTTPException(
+            status_code=500, detail=f"Error reading frontend page: {str(e)}"
+        )
 
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # Start the uvicorn server
     uvicorn.run(
         "static_server:app",
         host="0.0.0.0",
         port=8080,
         reload=True,
-    ) 
+    )

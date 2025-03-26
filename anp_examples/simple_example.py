@@ -218,7 +218,9 @@ async def simple_crawl(
 
         # Check if the maximum number of documents to crawl has been reached
         if len(crawled_documents) >= max_documents:
-            logging.info(f"Reached the maximum number of documents to crawl {max_documents}, stopping crawl")
+            logging.info(
+                f"Reached the maximum number of documents to crawl {max_documents}, stopping crawl"
+            )
             # Add a message to inform the model that the maximum number of crawls has been reached
             messages.append(
                 {
@@ -264,7 +266,9 @@ async def simple_crawl(
             len(crawled_documents) >= max_documents
             and current_iteration < max_documents
         ):
-            logging.info(f"Reached the maximum number of documents to crawl {max_documents}, making final summary")
+            logging.info(
+                f"Reached the maximum number of documents to crawl {max_documents}, making final summary"
+            )
             continue
 
     # Create result
@@ -317,7 +321,9 @@ async def main():
     print("\n=== Visited URLs ===")
     for url in result.get("visited_urls", []):
         print(url)
-    print(f"\n=== Crawled a total of {len(result.get('crawled_documents', []))} documents ===")
+    print(
+        f"\n=== Crawled a total of {len(result.get('crawled_documents', []))} documents ==="
+    )
 
 
 if __name__ == "__main__":

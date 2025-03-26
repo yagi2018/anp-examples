@@ -52,8 +52,12 @@ async def query(request: QueryRequest):
     """处理查询请求"""
     try:
         # 使用用户提供的智能体 URL 或默认 URL
-        initial_url = request.agent_url if request.agent_url else "https://agent-search.ai/ad.json"
-        
+        initial_url = (
+            request.agent_url
+            if request.agent_url
+            else "https://agent-search.ai/ad.json"
+        )
+
         # 调用 simple_crawl 函数
         result = await simple_crawl(
             user_input=request.query,
@@ -62,7 +66,7 @@ async def query(request: QueryRequest):
             private_key_path=private_key_path,
             max_documents=10,  # 最多爬取 10 个文档
         )
-        
+
         return result
     except Exception as e:
         logging.error(f"查询处理时出错: {str(e)}")
@@ -71,11 +75,11 @@ async def query(request: QueryRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    
+
     # 启动 uvicorn 服务器
     uvicorn.run(
         "server:app",
         host="0.0.0.0",
         port=8000,
         reload=True,
-    ) 
+    )
