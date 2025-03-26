@@ -22,13 +22,13 @@ logger = logging.getLogger(__name__)
 # Constants
 SERVER_URL = "http://localhost:8000"
 TEST_ENDPOINT = "/test"
-# 获取当前脚本所在目录
-CURRENT_DIR = Path(__file__).parent
-# 获取项目根目录（当前目录的父目录）
-BASE_DIR = CURRENT_DIR.parent
-# 使用绝对路径
-DID_DOCUMENT_PATH = str(BASE_DIR / "use_did_test_public/did.json")
-PRIVATE_KEY_PATH = str(BASE_DIR / "use_did_test_public/key-1_private.pem")
+# Get current script directory
+script_dir = os.path.dirname(os.path.abspath(__file__))
+# Get project root directory (parent directory of current directory)
+root_dir = os.path.dirname(script_dir)
+# Use absolute path
+DID_DOCUMENT_PATH = str(Path(root_dir) / "use_did_test_public/did.json")
+PRIVATE_KEY_PATH = str(Path(root_dir) / "use_did_test_public/key-1_private.pem")
 
 
 async def test_did_auth(url: str, auth_client: DIDWbaAuthHeader) -> Optional[str]:

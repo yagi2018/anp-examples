@@ -1,85 +1,74 @@
 import os
-from pathlib import Path
+import logging
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import asyncio
-import logging
-import sys
+from pathlib import Path
 
-# 将项目根目录添加到系统路径中
+# Add project root directory to system path
+import sys
 sys.path.append(str(Path(__file__).resolve().parent.parent.parent))
 
-from anp_examples.utils.log_base import setup_logging
-from anp_examples.anp_tool import ANPTool
-from web_app.backend.models import QueryRequest, QueryResponse
 from anp_examples.simple_example import simple_crawl
+from anp_examples.utils.log_base import setup_logging
+from web_app.backend.models import QueryRequest, QueryResponse
 
-# 设置日志
-setup_logging(logging.INFO)
+# Set up logging
+setup_logging()
 
-# 获取项目根目录
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
+# Get project root directory
+ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 
-# 初始化 FastAPI 应用
+# Initialize FastAPI app
 app = FastAPI(
-    title="智能体网络搜索 API",
-    description="基于 ANP 协议的智能体网络搜索 API",
+    title="Agent Network Search API",
+    description="Agent Network Search API based on ANP protocol",
     version="1.0.0",
 )
 
-# 配置 CORS
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # 允许所有来源
+    allow_origins=["*"],  # Allow all origins
     allow_credentials=True,
-    allow_methods=["*"],  # 允许所有方法
-    allow_headers=["*"],  # 允许所有头
+    allow_methods=["*"],  # Allow all methods
+    allow_headers=["*"],  # Allow all headers
 )
 
-# 获取 DID 路径
-did_document_path = str(BASE_DIR / "use_did_test_public/did.json")
-private_key_path = str(BASE_DIR / "use_did_test_public/key-1_private.pem")
+# Get DID paths
+did_document_path = str(ROOT_DIR / "use_did_test_public/did.json")
+private_key_path = str(ROOT_DIR / "use_did_test_public/key-1_private.pem")
 
 
 @app.get("/")
 async def read_root():
-    """API 根端点"""
-    return {"message": "智能体网络搜索 API 服务已启动"}
+    """API root endpoint"""
+    return {"message": "Agent Network Search API service is running"}
 
 
 @app.post("/api/query", response_model=QueryResponse)
 async def query(request: QueryRequest):
-    """处理查询请求"""
+    """Process query request"""
     try:
-        # 使用用户提供的智能体 URL 或默认 URL
-        initial_url = (
-            request.agent_url
-            if request.agent_url
-            else "https://agent-search.ai/ad.json"
-        )
-
-        # 调用 simple_crawl 函数
+        # Use agent URL provided by user or default URL
+        initial_url = request.agent_url if request.agent_url else "https://agent-search.ai/ad.json"
+        
+        # Call simple_crawl function
         result = await simple_crawl(
             user_input=request.query,
             task_type="general",
             did_document_path=did_document_path,
             private_key_path=private_key_path,
-            max_documents=10,  # 最多爬取 10 个文档
+            max_documents=10,  # Crawl up to 10 documents
+            initial_url=initial_url,
         )
-
+        
         return result
     except Exception as e:
-        logging.error(f"查询处理时出错: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"处理查询时出错: {str(e)}")
+        logging.error(f"Error processing query: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 
 if __name__ == "__main__":
-    import uvicorn
-
-    # 启动 uvicorn 服务器
-    uvicorn.run(
-        "server:app",
-        host="0.0.0.0",
-        port=8000,
-        reload=True,
-    )
+    # Start uvicorn server
+    uvicorn.run(app, host="0.0.0.0", port=9871)

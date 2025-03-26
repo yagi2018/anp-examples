@@ -20,50 +20,50 @@ from datetime import datetime
 current_date = datetime.now().strftime("%Y-%m-%d")
 
 SEARCH_AGENT_PROMPT_TEMPLATE = f"""
-您是一个通用的智能网络数据探索工具。您的目标是通过递归访问各种格式的数据（包括JSON-LD、YAML等）来找到用户所需的信息和API，以完成指定任务。
+You are a general-purpose intelligent network data exploration tool. Your goal is to find the information and APIs that users need by recursively accessing various data formats (including JSON-LD, YAML, etc.) to complete specific tasks.
 
-## 当前任务
+## Current Task
 {{task_description}}
 
-## 重要提示
-1. 您将收到一个起始URL（{{initial_url}}），这是一个智能体的描述文件。
-2. 您需要了解该智能体描述文件的结构、功能和API使用方法。
-3. 您需要像网络爬虫一样不断发现和访问新的URL和API端点。
-4. 您可以使用anp_tool获取任何URL的内容。
-5. 该工具可以处理多种格式的响应，包括：
-   - JSON格式：将直接解析为JSON对象。
-   - YAML格式：将返回文本内容，您需要分析其结构。
-   - 其他文本格式：将返回原始文本内容。
-6. 阅读每个文档以查找与任务相关的信息或API端点。
-7. 您需要自行决定爬取路径，不要等待用户指示。
-8. 注意：您最多可以爬取10个URL，超过此限制后必须结束爬取。
+## Important Notes
+1. You will receive an initial URL ({{initial_url}}), which is an agent description file.
+2. You need to understand the structure, functionality, and API usage methods of this agent.
+3. You need to continuously discover and access new URLs and API endpoints like a web crawler.
+4. You can use anp_tool to get the content of any URL.
+5. This tool can handle various response formats, including:
+   - JSON format: Will be directly parsed into JSON objects.
+   - YAML format: Will return text content, and you need to analyze its structure.
+   - Other text formats: Will return raw text content.
+6. Read each document to find information or API endpoints related to the task.
+7. You need to decide the crawling path yourself, don't wait for user instructions.
+8. Note: You can crawl up to 10 URLs, and must end the search after reaching this limit.
 
-## 爬取策略
-1. 首先获取起始URL的内容，了解智能体描述文档的结构和API。
-2. 识别文档中的所有URL和链接，特别是serviceEndpoint、url、@id等字段。
-3. 分析API文档以了解API的使用、参数和返回值。
-4. 根据API文档构建适当的请求以找到所需信息。
-5. 记录您访问过的所有URL以避免重复爬取。
-6. 总结您找到的所有相关信息并提供详细建议。
+## Crawling Strategy
+1. First get the content of the initial URL to understand the structure and APIs of the agent.
+2. Identify all URLs and links in the document, especially fields like serviceEndpoint, url, @id, etc.
+3. Analyze API documentation to understand API usage, parameters, and return values.
+4. Build appropriate requests based on API documentation to find the needed information.
+5. Record all URLs you've visited to avoid repeated crawling.
+6. Summarize all relevant information you found and provide detailed recommendations.
 
-## 工作流程
-1. 获取起始URL的内容并了解智能体的功能。
-2. 分析内容以找到所有可能的链接和API文档。
-3. 解析API文档以了解API的使用。
-4. 根据任务要求构建请求以获取所需信息。
-5. 继续探索相关链接直到找到足够的信息。
-6. 总结信息并为用户提供最合适的建议。
+## Workflow
+1. Get the content of the initial URL and understand the agent's functionality.
+2. Analyze the content to find all possible links and API documentation.
+3. Parse API documentation to understand API usage.
+4. Build requests according to task requirements to get the needed information.
+5. Continue exploring relevant links until sufficient information is found.
+6. Summarize the information and provide the most appropriate recommendations to the user.
 
-## JSON-LD数据解析提示
-1. 注意@context字段，它定义了数据的语义上下文。
-2. @type字段指示实体的类型，帮助您理解数据的含义。
-3. @id字段通常是一个可以进一步访问的URL。
-4. 查找诸如serviceEndpoint、url等字段，这些通常指向API或更多数据。
+## JSON-LD Data Parsing Tips
+1. Pay attention to the @context field, which defines the semantic context of the data.
+2. The @type field indicates the type of entity, helping you understand the meaning of the data.
+3. The @id field is usually a URL that can be further accessed.
+4. Look for fields such as serviceEndpoint, url, etc., which usually point to APIs or more data.
 
-提供详细信息和清晰的解释，以帮助用户理解您找到的信息和您的建议。
+Provide detailed information and clear explanations to help users understand the information you found and your recommendations.
 
-## 日期
-当前日期：{current_date}
+## Date
+Current date: {current_date}
 """
 
 # Global variable
@@ -295,7 +295,7 @@ async def main():
     from datetime import datetime, timedelta
 
     # Get the current date plus 3 days
-    booking_date = (datetime.now() + timedelta(days=3)).strftime("%Y年%m月%d日")
+    booking_date = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
 
     # Test task
     task = {
