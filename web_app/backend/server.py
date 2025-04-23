@@ -1,5 +1,6 @@
 import os
 import logging
+import time
 import uvicorn
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -15,6 +16,7 @@ from web_app.backend.models import QueryRequest, QueryResponse
 
 # Set up logging
 setup_logging()
+logger = logging.getLogger(__name__)
 
 # Get project root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent.parent
@@ -50,10 +52,14 @@ async def read_root():
 async def query(request: QueryRequest):
     """Process query request"""
     try:
+        start_time = time.time()
+        logger.info(f"Processing query: '{request.query}' with agent URL: {request.agent_url}")
+        
         # Use agent URL provided by user or default URL
         initial_url = request.agent_url if request.agent_url else "https://agent-search.ai/ad.json"
         
         # Call simple_crawl function
+        logger.info(f"Starting simple_crawl with task_type='general' and max_documents=10")
         result = await simple_crawl(
             user_input=request.query,
             task_type="general",
@@ -63,12 +69,17 @@ async def query(request: QueryRequest):
             initial_url=initial_url,
         )
         
+        elapsed_time = time.time() - start_time
+        logger.info(f"Query processed successfully in {elapsed_time:.2f} seconds")
+        logger.info(f"Visited {len(result.get('visited_urls', []))} URLs and crawled {len(result.get('crawled_documents', []))} documents")
+        
         return result
     except Exception as e:
-        logging.error(f"Error processing query: {str(e)}")
+        logger.error(f"Error processing query: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 
 if __name__ == "__main__":
     # Start uvicorn server
+    logger.info("Starting uvicorn server on 0.0.0.0:9871")
     uvicorn.run(app, host="0.0.0.0", port=9871)
