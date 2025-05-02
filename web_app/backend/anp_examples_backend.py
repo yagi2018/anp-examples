@@ -138,7 +138,7 @@ async def query(request: QueryRequest):
             task_type="general",
             did_document_path=did_document_path,
             private_key_path=private_key_path,
-            max_documents=10,  # Crawl up to 10 documents
+            max_documents=20,  # Crawl up to 10 documents
             initial_url=initial_url,  # Pass in user provided URL
         )
 
