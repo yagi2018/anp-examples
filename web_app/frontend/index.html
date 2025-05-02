@@ -561,9 +561,9 @@
           }
           // 限制最大进度为95%，剩余5%在请求完成时填满
           progress = Math.min(progress, 95);
-          progressBar.style.width = `${progress}%`;
+          progressBar.style.width = `${progress.toFixed(2)}%`;
           progressBar.setAttribute('aria-valuenow', progress);
-          progressBar.querySelector('.progress-percentage').textContent = `${progress}%`;
+          progressBar.querySelector('.progress-percentage').textContent = `${progress.toFixed(2)}%`;
         }, updateInterval);
         
         // 获取API基础路径（根据当前URL判断是否使用Nginx路径前缀）
