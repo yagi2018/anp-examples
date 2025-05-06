@@ -298,8 +298,28 @@ async def main():
     booking_date = (datetime.now() + timedelta(days=3)).strftime("%Y-%m-%d")
 
     # Test task
+    # task = {
+    #     "input": f"I need to book a hotel in Hangzhou: {booking_date}, for 1 day, coordinates (120.026208, 30.279212). Please handle it step by step: First, choose a good hotel yourself, then help me choose a room. Finally, tell me the details of your choice.",
+    #     "type": "hotel_booking",
+    # }
+
+    # task = {
+    #     "input": "明天到北京游玩，帮我看一下顺义区空港吉祥花园小区附近2km以内都有什么商场。",
+    #     "type": "general",
+    # }
+
+    # task = {
+    #     "input": "明天到北京国贸出差，帮我列一下步行1km以内的3星级酒店",
+    #     "type": "general",
+    # }
+
     task = {
-        "input": f"I need to book a hotel in Hangzhou: {booking_date}, for 1 day, coordinates (120.026208, 30.279212). Please handle it step by step: First, choose a good hotel yourself, then help me choose a room. Finally, tell me the details of your choice.",
+        "input": "公司在阿里云云谷园区，附近有什么好吃的湘菜推荐",
+        "type": "general",
+    }
+
+    task = {
+        "input": "帮我预订一间北京望京地区今晚的三星级酒店",
         "type": "hotel_booking",
     }
 
@@ -312,7 +332,7 @@ async def main():
         task["type"],
         did_document_path=did_document_path,
         private_key_path=private_key_path,
-        max_documents=10,  # Crawl up to 10 documents
+        max_documents=20,  # Crawl up to 20 documents
     )
 
     # Print result

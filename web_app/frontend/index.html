@@ -546,7 +546,7 @@
         // 设置进度条动画 - 更加智能的进度估计
         let progress = 0;
         const totalEstimatedTime = 120; // 估计总时间为120秒
-        const updateInterval = 1000; // 每秒更新一次
+        const updateInterval = 2000; // 每秒更新一次
         
         progressInterval = setInterval(() => {
           // 非线性进度增长，开始快，接近结束时变慢
@@ -573,8 +573,8 @@
         const response = await new Promise((resolve, reject) => {
           const xhr = new XMLHttpRequest();
           
-          // 设置超时时间为5分钟
-          xhr.timeout = 300000; // 5分钟 = 300000毫秒
+          // 设置超时时间为10分钟
+          xhr.timeout = 300000 * 2; // 5分钟 = 300000毫秒
           
           xhr.open('POST', `${BASE_PATH}/api/query`, true);
           xhr.setRequestHeader('Content-Type', 'application/json');
