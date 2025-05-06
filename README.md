@@ -5,6 +5,16 @@
 <a name="chinese"></a>
 ## 中文文档
 
+### 环境设置
+
+在运行项目之前，你需要设置必要的环境变量。项目中提供了一个 `.env.example` 文件作为模板：
+
+1.  复制 `.env.example` 文件并重命名为 `.env`：
+    ```bash
+    cp .env.example .env
+    ```
+2.  编辑 `.env` 文件，填入你的 Azure OpenAI API 密钥和 Endpoint 等实际配置信息。
+
 ### 项目介绍
 
 ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序，允许用户使用自然语言与智能体网络进行交互。用户可以提供智能体描述URL，通过简单的问题与智能体进行对话，并实时查看网络爬取的过程。
@@ -103,6 +113,16 @@ print(result["visited_urls"])  # 访问过的URL
 
 <a name="english"></a>
 ## English Documentation
+
+### Environment Setup
+
+Before running the project, you need to set up the necessary environment variables. An `.env.example` file is provided as a template:
+
+1.  Copy the `.env.example` file and rename it to `.env`:
+    ```bash
+    cp .env.example .env
+    ```
+2.  Edit the `.env` file and fill in your actual Azure OpenAI API Key, Endpoint, and other configuration details.
 
 ### Project Introduction
 
