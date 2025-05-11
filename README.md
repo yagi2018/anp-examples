@@ -8,7 +8,7 @@
 ### 项目介绍
 
 ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序，允许用户使用自然语言与智能体网络进行交互。用户可以提供智能体描述URL，通过简单的问题与智能体进行对话，并实时查看网络爬取的过程。
-![查询天气案例](images\anp-examples-mainpage.png)
+![查询天气案例](images/anp-examples-mainpage.png)
 
 ### 项目结构
 
@@ -52,7 +52,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
 ##### 方法一：通过浏览器直接运行
 通过访问我们部署在WEB端的应用程序，你可以直接体验ANP网络探索工具的功能。
 [访问网址:Https://service.agent-network-protocol.com/anp-demo/](https://service.agent-network-protocol.com/anp-demo/)
-![查询天气案例](.\images\anp-examples-web-search-result.png)
+![查询天气案例](images/anp-examples-web-search-result.png)
 
 ##### 方法二：使用脚本运行
 通过以下步骤，你可以在本地运行Web应用程序。
@@ -86,10 +86,10 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
 4. 在输入框中输入您的问题，并提供智能体URL（可选，默认为`https://agent-search.ai/ad.json`）
 
 5. 点击"提交问题"按钮
-![查询天气案例](.\images\anp-examples-search-agent.png)
+![查询天气案例](images/anp-examples-search-agent.png)
 
-6. 查看结果和网络爬取过程
-![查询天气案例](.\images\anp-examples-search-result.png)
+1. 查看结果和网络爬取过程
+![查询天气案例](images/anp-examples-search-result.png)
 
 ### 如何开发（面向开发者）
 
@@ -122,7 +122,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
 ### Project Introduction
 
 ANP Network Explorer is an application based on the Agent Network Protocol (ANP) that allows users to interact with agent networks using natural language. Users can provide agent description URLs, engage in conversations with agents through simple questions, and view the network crawling process in real-time.
-![Search for weather cases](.\images\anp-examples-mainpage.png)
+![Search for weather cases](images/anp-examples-mainpage.png)
 
 ### Project Structure
 
@@ -166,7 +166,7 @@ Before running the project, you need to set up the necessary environment variabl
 ##### Mode A: Run directly through a browser
 By accessing our application deployed on the web side, you can directly experience the functionality of ANP network exploration tool.
 [Visit website : Https://service.agent-network-protocol.com/anp-demo/](https://service.agent-network-protocol.com/anp-demo/)
-![Weather Case Study](.\images\anp-examples-web-search-result.png)
+![Weather Case Study](images/anp-examples-web-search-result.png)
 
 ##### Mode B：Use script to run
 By following these steps, you can run a web application locally.
@@ -199,10 +199,10 @@ By following these steps, you can run a web application locally.
 4. Enter your question in the input box and provide an agent URL (optional, default is `https://agent-search.ai/ad.json`)
 
 5. Click the "Submit" button 
-![Weather Case Study](.\images\anp-examples-search-agent.png)
+![Weather Case Study](images/anp-examples-search-agent.png)
 
 6. view results and the network crawling process
-![Weather Case Study](.\images\anp-examples-search-result.png)
+![Weather Case Study](images/anp-examples-search-result.png)
 
 ### How to Develop (for Developers)
 
