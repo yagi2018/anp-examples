@@ -66,7 +66,7 @@ ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序�
    ./web_app/run.sh
    ```
 
-3. 打开浏览器访问：`http://localhost:8000`
+3. 打开浏览器访问：`http://localhost:5000`
 
 4. 在输入框中输入您的问题，并提供智能体URL（可选，默认为`https://agent-search.ai/ad.json`）
 
