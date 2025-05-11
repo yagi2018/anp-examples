@@ -256,6 +256,10 @@ async def simple_crawl(
             }
         )
 
+        # debug code
+        logging.info(f"Model response: {response_message.content}")
+        logging.info(f"Tool calls: {response_message.tool_calls}")
+
         # Check if the conversation should end
         if not response_message.tool_calls:
             logging.info("The model did not request any tool calls, ending crawl")
