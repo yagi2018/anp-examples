@@ -8,6 +8,8 @@ from openai import AsyncAzureOpenAI
 from dotenv import load_dotenv
 from anp_examples.utils.log_base import set_log_color_level
 from anp_examples.anp_tool import ANPTool  # Import ANPTool
+from openai import AsyncOpenAI,OpenAI
+from config import validate_config,DASHSCOPE_API_KEY,DASHSCOPE_BASE_URL,DASHSCOPE_MODEL_NAME
 
 # Get the absolute path to the root directory
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -18,6 +20,8 @@ load_dotenv(ROOT_DIR / ".env")
 from datetime import datetime
 
 current_date = datetime.now().strftime("%Y-%m-%d")
+
+validate_config()
 
 SEARCH_AGENT_PROMPT_TEMPLATE = f"""
 You are a general-purpose intelligent network data exploration tool. Your goal is to find the information and APIs that users need by recursively accessing various data formats (including JSON-LD, YAML, etc.) to complete specific tasks.
@@ -170,11 +174,17 @@ async def simple_crawl(
     )
 
     # Initialize Azure OpenAI client
-    client = AsyncAzureOpenAI(
-        api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-        api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
-        azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-        azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+    # client = AsyncAzureOpenAI(
+    #     api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+    #     api_version=os.getenv("AZURE_OPENAI_API_VERSION"),
+    #     azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
+    #     azure_deployment=os.getenv("AZURE_OPENAI_DEPLOYMENT"),
+    # )
+
+# LLM change to Qwen2.5-14b
+    client = AsyncOpenAI(
+        api_key = DASHSCOPE_API_KEY,
+        base_url = DASHSCOPE_BASE_URL
     )
 
     # Get initial URL content
@@ -231,10 +241,10 @@ async def simple_crawl(
 
         # Get model response
         completion = await client.chat.completions.create(
-            model=os.getenv("AZURE_OPENAI_MODEL"),
-            messages=messages,
-            tools=get_available_tools(anp_tool),
-            tool_choice="auto",
+            model = DASHSCOPE_MODEL_NAME,
+            messages = messages,
+            tools = get_available_tools(anp_tool),
+            tool_choice = "auto",
         )
 
         response_message = completion.choices[0].message
