@@ -174,5 +174,3 @@ cython_debug/
 
 nginx_fixes/
 
-# Test directory
-web_app/backend/test/
