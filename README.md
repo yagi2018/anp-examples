@@ -8,7 +8,7 @@
 ### 项目介绍
 
 ANP网络探索工具是一个基于Agent Network Protocol (ANP)的应用程序，允许用户使用自然语言与智能体网络进行交互。用户可以提供智能体描述URL，通过简单的问题与智能体进行对话，并实时查看网络爬取的过程。
-![查询天气案例](.\images\anp-examples-mainpage.png)
+![查询天气案例](images\anp-examples-mainpage.png)
 
 ### 项目结构
 
