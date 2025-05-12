@@ -421,7 +421,7 @@
     // 暗黑模式切换
     document.addEventListener('DOMContentLoaded', () => {
       // 检查系统偏好
-      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const prefersDarkMode = window.matchMedia('(prefers-color-scheme: light)').matches;
       const savedTheme = localStorage.getItem('theme');
       
       // 根据保存的主题或系统偏好设置主题
