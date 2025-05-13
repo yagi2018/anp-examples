@@ -123,6 +123,10 @@ class ANPTool:
         if params is None:
             params = {}
 
+        # Check the HTTP or HTTPS protocol header, if not, add it
+        if not url.startswith(("http://", "https://")):
+            url = f"http://{url}"
+
         logging.info(f"ANP request: {method} {url}")
 
         # Add basic request headers
